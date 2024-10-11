@@ -31,12 +31,15 @@ def recursive_searching(url, identifying_id, checked_urls = set(), course_urls =
 
     # lxml supposedly faster parser than html.parser
     for tag in soup.find_all("a"):
-        tag = tag.get("href")
-        if tag == None or tag[0] == "#":
+        u = tag.get("href")
+
+        # avoid sites like https://examplesite.com/page#section
+        if u == None:
             continue
+        u = u.split("#")[0]
 
-        full_url = urljoin(url, tag)
-
+        # to avoid leaving the main site (dont want to go to facebook or something)
+        full_url = urljoin(url, u)
         base_url = urlparse(full_url).netloc
         orig_base_url = urlparse(url).netloc
         if base_url != orig_base_url:
