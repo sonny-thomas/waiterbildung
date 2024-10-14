@@ -11,9 +11,12 @@ async def scrap_course_data(root_url, identifying_id) -> list[str]:
     urls = queue.Queue()
     checked_urls = set()
     urls.put(root_url)
+    checked_urls.add(root_url)
 
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=60)
+        ) as session:
             while not urls.empty():
                 cur_url = urls.get()
                 try:
@@ -26,10 +29,17 @@ async def scrap_course_data(root_url, identifying_id) -> list[str]:
                             except:
                                 continue
                         else:
-                            print("Failed to retrieve the webpage. Status code:", response.status, cur_url)
+                            print(
+                                "Failed to retrieve the webpage. Status code:",
+                                response.status,
+                                cur_url,
+                            )
                             continue
                 except aiohttp.ClientError as e:
                     print(f"Client error: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Exception :{e} \n url: {cur_url}")
                     continue
 
                 soup = BeautifulSoup(html, "lxml")
@@ -60,17 +70,31 @@ async def scrap_course_data(root_url, identifying_id) -> list[str]:
         return course_urls
 
 
-
 def write_to_file(output_path, course_urls):
     with open(output_path, "w") as f:
-        json.dump(course_urls, f, indent = 4)
+        json.dump(course_urls, f, indent=4)
+
+
+def read_file(path):
+    with open(path) as f:
+        return json.load(f)
+
+
+def process_urls(data):
+    for uni in data:
+        name = uni["name"]
+        url = uni["url"]
+        identifier = uni["identifier"]
+        course_urls = asyncio.run(scrap_course_data(url, identifier))
+        output_path = f"{name}.json"
+        write_to_file(output_path, course_urls)
+
 
 def main():
-    url = "https://www.zhaw.ch/de/hochschule/"
-    identifying_id = "ce-at-a-glance"
-    output_path = "course_urls.json"
-    course_urls = asyncio.run(scrap_course_data(url, identifying_id))
-    write_to_file(output_path, course_urls)
+    json_path = "data.json"
+    data = read_file(json_path)
+    process_urls(data)
+
 
 if __name__ == "__main__":
     main()
