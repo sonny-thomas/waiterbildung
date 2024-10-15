@@ -21,6 +21,7 @@ async def scrap_course_data(root_url, identifying_id) -> list[str]:
                 cur_url = urls.get()
                 try:
                     async with session.get(cur_url) as response:
+                        cur_url = str(response.url)
                         html = ""
                         if response.status == 200:
                             # utf-8 encoding error on some sites
