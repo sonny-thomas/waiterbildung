@@ -1,12 +1,20 @@
 [
   {
     "name": "fhnw",
-    "url": "https://www.fhnw.ch/en/",
-    "identifier": "edu_title"
-  },
-  {
-    "name": "zhaw",
-    "url": "https://www.zhaw.ch/de/hochschule/",
-    "identifier": "ce-at-a-glance"
+    "url": "https://www.fhnw.ch/en",
+    "identifiers": [
+      {
+        "name": "title",
+        "id": "maincontent"
+      },
+      {
+        "name": "description",
+        "class": "text__lead"
+      },
+      {
+        "name": "key data",
+        "class": "edu__content"
+      }
+    ]
   }
 ]
