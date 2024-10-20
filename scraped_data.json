@@ -1,0 +1,46 @@
+{
+    "fhnw": {
+        "a76ca8bf-f265-4094-b576-00f38f27284f": {
+            "program_name": "Bachelor in Architektur",
+            "degree": "Bachelor of Arts FHNW",
+            "description": "Der Bachelor-Studiengang Architektur ist eine solide Basis f\u00fcr die Zukunft, der einen umfassenden Zugang zum Beruf er\u00f6ffnet. Neben dem fachlichen Know-how \u2013 vom Entwurf bis zur Bauleitung \u2013 geht es immer auch um Kooperation: mit Kolleginnen und Kollegen, mit Bauherren und mit den Fachleuten anderer Disziplinen. Du setzt dich mit digitalen Entwurfs- und Konstruktionstechniken auseinander und verfeinerst dein handwerkliches K\u00f6nnen beim Bau von Architekturmodellen in verschiedenen Materialien. So entwickelst du ein tiefes digitales und analoges Raumverst\u00e4ndnis.",
+            "ects_points": null,
+            "duration": {
+                "value": 6,
+                "unit": "Semester"
+            },
+            "mode_of_study": "Vollzeit",
+            "teaching_language": "Deutsch",
+            "fees": {
+                "application_fee": {
+                    "amount": 200,
+                    "currency": "CHF"
+                },
+                "tuition_fee": {
+                    "local_students": {
+                        "amount": 810,
+                        "currency": "CHF"
+                    },
+                    "eu_students": {
+                        "amount": 1110,
+                        "currency": "CHF"
+                    },
+                    "international_students": {
+                        "amount": null,
+                        "currency": null
+                    }
+                }
+            },
+            "program_structure": {
+                "number_of_semesters": 6,
+                "stay_abroad": false
+            },
+            "key_dates": {
+                "start_of_semester": "2024-09-16",
+                "application_open": null,
+                "application_close": null
+            },
+            "url": "https://www.fhnw.ch/de/studium/architektur-bau-geomatik/bachelor-studiengang-architektur"
+        }
+    }
+}
