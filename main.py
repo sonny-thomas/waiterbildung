@@ -8,12 +8,16 @@ from aiohttp import ClientTimeout
 from collections import deque
 from openai import OpenAI
 from uuid import uuid4
+import os
+from dotenv import load_dotenv
 
 global_url_count = 0
+scraped_courses = 0
 scraped_data = {}
 MAX_COURSES = 1
 
-client = OpenAI(api_key="")
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPEN_API_KEY"))
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,37 +30,33 @@ async def fetch(session, url):
             if response.status == 200:
                 return await response.text(errors="replace")
             else:
-                logger.error(
-                    f"Failed to retrieve {url}: Status code {response.status}"
-                )
+                logger.error(f"Failed to retrieve {url}: Status code {response.status}")
                 return None
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         logger.error(f"Error accessing {url}: {e}")
         return None
 
 
-def generate_openai_prompt(html_content):
+def generate_openai_prompt(course_data):
+    info_str = ", \n".join(
+        [f"name: {data[0]}, content: {data[1]}" for data in course_data]
+    )
+
     prompt = f"""
-    You are a web scraper and your task is to extract course information from the following HTML content.
-    A course page typically contains details such as the course name, description, duration, credits, prerequisites, and fees.
-    If the current page is not a course page, return an empty JSON object.
+    {info_str}
 
-    Here is the HTML content:
-    {html_content}
-
-    Please return the extracted course information as a JSON object based on the schema provided.
-    If the current page is not a course page, return an empty JSON object.
+    Please return the formatted course information as a JSON object based on the schema provided.
     """
     return prompt
 
 
-async def extract_course_data(html_content, course_url):
-    prompt = generate_openai_prompt(html_content)
+async def extract_course_data(course_data, course_url):
+    prompt = generate_openai_prompt(course_data)
 
     try:
         response = await asyncio.to_thread(
             client.chat.completions.create,
-            model="o1-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
@@ -74,14 +74,8 @@ async def extract_course_data(html_content, course_url):
                         "value": "integer",
                         "unit": "string"
                     },
-                    "start_date": "date",
-                    "application_deadline": "date",
                     "mode_of_study": "string",
                     "teaching_language": "string",
-                    "location": {
-                        "city": "string",
-                        "country": "string"
-                    },
                     "fees": {
                         "application_fee": {
                             "amount": "decimal",
@@ -102,39 +96,15 @@ async def extract_course_data(html_content, course_url):
                             }
                         }
                     },
-                    "credits": {
-                        "total_ects": "integer",
-                        "per_year": "integer"
-                    },
                     "program_structure": {
                         "number_of_semesters": "integer",
                         "stay_abroad": "boolean"
                     },
-                    "contact_information": {
-                        "program_head": {
-                            "name": "string",
-                            "phone": "string",
-                            "email": "string"
-                        },
-                        "institute": {
-                            "name": "string",
-                            "address": {
-                                "street": "string",
-                                "city": "string",
-                                "postal_code": "string",
-                                "country": "string"
-                            },
-                            "phone": "string",
-                            "email": "string"
-                        }
-                    },
-                    "admission_requirements": "string",
                     "key_dates": {
                         "start_of_semester": "date",
                         "application_open": "date",
                         "application_close": "date"
                     },
-                    "url": "string"
                 }
 
                 Explanation:
@@ -143,42 +113,35 @@ async def extract_course_data(html_content, course_url):
                     description: Brief overview of the program's objectives or focus.
                     ects_points: Total credits (if applicable).
                     duration: How long the program lasts, with both a value and unit (e.g., 4 semesters, 2 years).
-                    start_date: The start date of the program.
-                    application_deadline: Final date for applications to be submitted.
                     mode_of_study: Describes the type of study (e.g., full-time, online).
                     teaching_language: Primary language in which the course is taught.
-                    location: The city and country where the course takes place.
                     fees: Application and tuition fees categorized for local, EU, and international students.
-                    credits: Total number of credits awarded upon completion and per year (if applicable).
                     program_structure: Number of semesters and whether a study abroad option is available.
-                    contact_information: Contact details, including the program head and institute contact info.
-                    admission_requirements: Requirements for entry into the program (if available).
                     key_dates: Relevant dates for the start of the semester and application window.
-                    url: Direct URL to the program’s official webpage.
                 """,
                 },
                 {"role": "user", "content": prompt},
             ],
         )
-        course_data = response.choices[0].message.content.strip()
+        course_data = response.choices[0].message.content
         if not course_data:
             logger.warning(f"Received empty response for {course_url}")
             return None
         try:
+            course_data = course_data.replace("```json", "").replace("```", "").strip()
             course_json = json.loads(course_data)
+            course_json["url"] = course_url
+            return course_json
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error for {course_url}: {e}")
             return None
-        course_json["url"] = course_url
-
-        return course_json
 
     except Exception as e:
         logger.error(f"Error during OpenAI processing: {e}")
         return None
 
 
-async def scrap_course_data(session, url, identifiers, checked_urls, queue):
+async def scrap_course_data(session, url, identifiers, checked_urls, queue, uni_name):
     course_url = None
 
     html = await fetch(session, url)
@@ -186,20 +149,27 @@ async def scrap_course_data(session, url, identifiers, checked_urls, queue):
         logger.info(f"Succesfully fetched {url}")
         soup = BeautifulSoup(html, "lxml")
 
+        course_data = []
         found_identifiers = 0
         for identifier in identifiers:
             if identifier.get("id"):
-                if soup.find(id=identifier["id"]):
+                content = soup.find(id=identifier["id"])
+                if content:
                     found_identifiers += 1
+                    course_data.append((identifier["name"], content.get_text()))
                     logger.info(f"Found element with id {identifier['id']} on {url}")
                 else:
                     logger.error(
                         f"Element with id {identifier['id']} not found on {url}"
                     )
             elif identifier.get("class"):
-                if soup.find(class_=identifier["class"]):
+                content = soup.find(class_=identifier["class"])
+                if content:
                     found_identifiers += 1
-                    logger.info(f"Found element with class {identifier['class']} on {url}")
+                    course_data.append((identifier["name"], content.get_text()))
+                    logger.info(
+                        f"Found element with class {identifier['class']} on {url}"
+                    )
                 else:
                     logger.error(
                         f"Element with class {identifier['class']} not found on {url}"
@@ -211,17 +181,15 @@ async def scrap_course_data(session, url, identifiers, checked_urls, queue):
         )
 
         if found_identifiers >= (len_identifiers / 2):
-            logger.info(f"Identifying element found on {url}")
-            scraped_data[str(uuid4())] = {"url": url}
-            await save_scraped_data()
-            return
-            logger.info(f"Identifying element found on {url}")
-            course_data = await extract_course_data(html, url)
-            if course_data:
-                scraped_data[str(uuid4())] = course_data
+            course_url = url
+            course_json = await extract_course_data(course_data, course_url)
+            if course_json:
+                global scraped_courses
+                scraped_data[uni_name][str(uuid4())] = course_json
+                scraped_courses += 1
                 logger.info(f"Extracted course data from {url}")
 
-                if len(scraped_data) >= MAX_COURSES:
+                if scraped_courses >= MAX_COURSES:
                     logger.info(
                         f"Reached maximum number of courses ({MAX_COURSES}). Saving data and exiting..."
                     )
@@ -243,22 +211,27 @@ async def scrap_course_data(session, url, identifiers, checked_urls, queue):
     return
 
 
-async def worker(session, queue, checked_urls):
-    while queue and len(scraped_data) < MAX_COURSES:
+async def worker(session, queue, checked_urls, uni_name):
+    while queue and scraped_courses < MAX_COURSES:
         url, identifiers = queue.popleft()
-        await scrap_course_data(session, url, identifiers, checked_urls, queue)
+        await scrap_course_data(
+            session, url, identifiers, checked_urls, queue, uni_name
+        )
 
 
 async def process_url(data, session):
     global scraped_data
+    uni_name = data["name"]
     url = data["url"]
     identifiers = data["identifiers"]
     checked_urls = {url}
+    scraped_data[uni_name] = {}
+
     queue = deque([(url, identifiers)])
 
     logger.info(f"Processing: {url}\n")
 
-    workers = [asyncio.create_task(worker(session, queue, checked_urls))]
+    workers = [asyncio.create_task(worker(session, queue, checked_urls, uni_name))]
     await asyncio.gather(*workers)
 
 
@@ -271,9 +244,7 @@ async def main():
     with open("data.json", encoding="utf-8") as f:
         data = json.load(f)
 
-    async with aiohttp.ClientSession(
-        timeout=ClientTimeout(total=60)
-    ) as session:
+    async with aiohttp.ClientSession(timeout=ClientTimeout(total=60)) as session:
         tasks = [process_url(uni, session) for uni in data]
         await asyncio.gather(*tasks)
 
