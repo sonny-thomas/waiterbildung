@@ -1,20 +1,22 @@
-[
-  {
-    "name": "fhnw",
-    "url": "https://www.fhnw.ch/en",
-    "identifiers": [
-      {
-        "name": "title",
-        "id": "maincontent"
-      },
-      {
-        "name": "description",
-        "class": "text__lead"
-      },
-      {
-        "name": "key data",
-        "class": "edu__content"
-      }
-    ]
-  }
-]
+{
+  "url": "https://www.fhnw.ch/en",
+  "identifiers": [
+    {
+      "name": "title",
+      "id": "maincontent"
+    },
+    {
+      "name": "description",
+      "class": "text__lead"
+    },
+    {
+      "name": "key data",
+      "class": "edu__content"
+    }
+  ]
+}
+
+{
+  "name": "title",
+  "id": "maincontent"
+}
