@@ -35,6 +35,12 @@ class Settings(BaseSettings):
         "CELERY_RESULT_BACKEND", "redis://redis:6379/0"
     )
 
+    # Monitoring Settings
+    FLOWER_PORT: int = int(os.getenv("FLOWER_PORT", "5555"))
+    FLOWER_UNAUTHENTICATED_API: bool = (
+        os.getenv("FLOWER_UNAUTHENTICATED_API", "false").lower() == "true"
+    )
+
     # Application Settings
     APP_NAME: str = os.getenv("APP_NAME", "poc-scraper")
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
@@ -47,23 +53,6 @@ class Settings(BaseSettings):
     API_PORT: int = int(os.getenv("API_PORT", "8000"))
     API_PREFIX: str = os.getenv("API_PREFIX", "/api/v1")
     ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "*")
-
-    # Security Settings
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-default")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
-    )
-    SSL_ENABLED: bool = os.getenv("SSL_ENABLED", "false").lower() == "true"
-
-    # Rate Limiting Settings
-    RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
-    SCRAPING_DELAY: int = int(os.getenv("SCRAPING_DELAY", "2"))
-
-    # Monitoring Settings
-    FLOWER_PORT: int = int(os.getenv("FLOWER_PORT", "5555"))
-    FLOWER_UNAUTHENTICATED_API: bool = (
-        os.getenv("FLOWER_UNAUTHENTICATED_API", "false").lower() == "true"
-    )
 
     @field_validator("LOG_LEVEL")
     @classmethod
