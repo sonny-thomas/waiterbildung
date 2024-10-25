@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 
 from celery import Celery
 from fastapi import FastAPI
-from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.scraper import router
 from app.core.config import settings
 from app.core.database import Database
 
@@ -15,18 +15,11 @@ async def lifespan(app: FastAPI):
     Lifecycle manager for the FastAPI application.
     Handles database connections and other startup/shutdown events.
     """
-    logger.info("Starting up application...")
     try:
         await Database.connect_db()
-        logger.info("Database connection established")
         yield
-    except Exception as e:
-        logger.error(f"Startup error: {e}")
-        raise
     finally:
-        logger.info("Shutting down application...")
         await Database.close_db()
-        logger.info("Database connection closed")
 
 
 app = FastAPI(
@@ -48,8 +41,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(router, prefix=settings.API_PREFIX)
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint to verify API status"""
+    return {
+        "status": "healthy",
+        "version": settings.APP_VERSION,
+        "environment": settings.ENVIRONMENT,
+    }
+
+
 celery = Celery(
     "scraper_worker",
+    imports=["app.tasks.scraper_tasks"],
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     broker_connection_retry_on_startup=True,

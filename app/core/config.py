@@ -1,6 +1,5 @@
-import logging
 import os
-from typing import List, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import field_validator
@@ -15,12 +14,16 @@ class Settings(BaseSettings):
 
     # Database Settings
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
-    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "university_courses")
-    MONGODB_USERNAME: Optional[str] = os.getenv("MONGODB_USERNAME")
-    MONGODB_PASSWORD: Optional[str] = os.getenv("MONGODB_PASSWORD")
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "poc-scraper")
+    MONGO_INITDB_ROOT_USERNAME: Optional[str] = os.getenv(
+        "MONGO_INITDB_ROOT_USERNAME"
+    )
+    MONGO_INITDB_ROOT_PASSWORD: Optional[str] = os.getenv(
+        "MONGO_INITDB_ROOT_PASSWORD"
+    )
 
     # Redis Settings
-    # REDIS_USER: Optional[str] = os.getenv("REDIS_USER")
+    REDIS_USER: Optional[str] = os.getenv("REDIS_USER")
     REDIS_PASSWORD: Optional[str] = os.getenv("REDIS_PASSWORD")
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379")
 
@@ -33,18 +36,17 @@ class Settings(BaseSettings):
     )
 
     # Application Settings
-    APP_NAME: str = os.getenv("APP_NAME", "university-scraper")
+    APP_NAME: str = os.getenv("APP_NAME", "poc-scraper")
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "0") == "1"
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-    WORKERS_COUNT: int = int(os.getenv("WORKERS_COUNT", "4"))
 
     # API Settings
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
     API_PORT: int = int(os.getenv("API_PORT", "8000"))
     API_PREFIX: str = os.getenv("API_PREFIX", "/api/v1")
-    ALLOWED_ORIGINS: List[str] = os.getenv("ALLOWED_ORIGINS", ["*"])
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "*")
 
     # Security Settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-default")
@@ -72,6 +74,13 @@ class Settings(BaseSettings):
             return "INFO"
         return upper_v
 
+    @field_validator("ALLOWED_ORIGINS")
+    @classmethod
+    def validate_allowed_origins(cls, v):
+        if isinstance(v, str):
+            return [url.strip() for url in v.split(",")]
+        return ["*"]
+
     class Config:
         case_sensitive = True
         env_file = ".env"
@@ -92,10 +101,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-
-logging.basicConfig(
-    level=settings.LOG_LEVEL,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger("fastapi")

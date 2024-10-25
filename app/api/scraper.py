@@ -1,76 +1,128 @@
-from fastapi import APIRouter, HTTPException
+from datetime import datetime, timezone
 from typing import List
-from app.models.course import Course, ScrapingJob
-from app.core.database import Database
-from app.tasks.scraper_tasks import scrape_university_courses
-from bson import ObjectId
-from datetime import datetime
+from urllib.parse import urlparse
 
-router = APIRouter()
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException
+
+from app.core.database import Database
+from app.models.course import ScrapingJob, ScrapingRequest
+
+router = APIRouter(tags=["scraper"])
 
 
 @router.post("/scrape", response_model=ScrapingJob)
-async def start_scraping(university_url: str):
+async def start_scraping(scraping_request: ScrapingRequest):
     """Start a new scraping job for a university."""
-    job_id = str(ObjectId())
+    from app.tasks.scraper_tasks import scrape_university_courses
 
-    # Create a new job record
+    parsed_url = urlparse(str(scraping_request.course_url))
+    if parsed_url.scheme != "https":
+        raise HTTPException(
+            status_code=400, detail="URL must use https protocol"
+        )
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    identifiers_dict = [
+        identifier.to_dict() for identifier in scraping_request.identifiers
+    ]
+
+    existing_job = await Database.get_collection("scraping_jobs").find_one(
+        {"base_url": base_url}
+    )
+    if existing_job:
+        return ScrapingJob(id=str(existing_job["_id"]), **existing_job)
+
     job = {
-        "_id": ObjectId(job_id),
+        "_id": ObjectId(),
         "status": "pending",
-        "university": university_url,
-        "created_at": datetime.utcnow(),
+        "base_url": base_url,
+        "identifiers": identifiers_dict,
+        "created_at": datetime.now(timezone.utc),
         "completed_at": None,
-        "total_courses": None,
+        "courses_scraped": None,
         "error_message": None,
     }
 
     await Database.get_collection("scraping_jobs").insert_one(job)
 
-    # Start Celery task
-    scrape_university_courses.delay(job_id, university_url)
+    scrape_university_courses.delay(str(job["_id"]))
 
-    return ScrapingJob(
-        id=job_id,
-        status="pending",
-        university=university_url,
-        created_at=job["created_at"],
-        completed_at=None,
-        total_courses=None,
-        error_message=None,
+    return ScrapingJob(id=str(job["_id"]), **job)
+
+
+@router.get("/jobs", response_model=List[ScrapingJob])
+async def list_jobs():
+    """List all scraping jobs."""
+    jobs = (
+        await Database.get_collection("scraping_jobs")
+        .find()
+        .to_list(length=None)
+    )
+    return [ScrapingJob(id=str(job["_id"]), **job) for job in jobs]
+
+
+@router.get("/job", response_model=ScrapingJob)
+async def get_job(job_id: str = None, url: str = None):
+    """Get details of a scraping job by its ID or URL."""
+    if job_id:
+        job = await Database.get_collection("scraping_jobs").find_one(
+            {"_id": ObjectId(job_id)}
+        )
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return ScrapingJob(id=str(job["_id"]), **job)
+
+    if url:
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        job = await Database.get_collection("scraping_jobs").find_one(
+            {"base_url": base_url}
+        )
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return ScrapingJob(id=str(job["_id"]), **job)
+
+    raise HTTPException(
+        status_code=400, detail="Either job_id or url must be provided"
     )
 
 
-@router.get("/jobs/{job_id}", response_model=ScrapingJob)
-async def get_job_status(job_id: str):
-    """Get the status of a scraping job."""
-    job = await Database.get_collection("scraping_jobs").find_one(
-        {"_id": ObjectId(job_id)}
-    )
-    if not job:
-        raise HTTPException(status_code=404, message="Job not found")
-
-    return ScrapingJob(
-        id=str(job["_id"]),
-        status=job["status"],
-        university=job["university"],
-        created_at=job["created_at"],
-        completed_at=job["completed_at"],
-        total_courses=job["total_courses"],
-        error_message=job["error_message"],
-    )
-
-
-@router.get("/courses", response_model=List[Course])
-async def get_courses(university: str = None, skip: int = 0, limit: int = 100):
-    """Get list of scraped courses with optional university filter."""
-    query = {"university": university} if university else {}
+@router.get("/courses/{url}", response_model=List[dict])
+async def list_courses(url: str):
+    """List all courses for a university."""
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
     courses = (
         await Database.get_collection("courses")
-        .find(query)
-        .skip(skip)
-        .limit(limit)
-        .to_list(length=limit)
+        .find({"base_url": base_url})
+        .to_list(length=None)
     )
-    return [Course(**course) for course in courses]
+    for course in courses:
+        course["id"] = str(course["_id"])
+    return [course for course in courses]
+
+
+@router.get("/universities", response_model=List[str])
+async def list_universities():
+    """List all universities."""
+    collections = await Database.list_collection_names()
+    return [
+        collection
+        for collection in collections
+        if collection != "scraping_jobs"
+    ]
+
+
+@router.get("/course/{course_id}", response_model=dict)
+async def get_course(course_id: str):
+    """Get details of a course by its ID."""
+    for collection in await Database.list_collection_names():
+        if collection != "scraping_jobs":
+            course = await Database.get_collection(collection).find_one(
+                {"_id": ObjectId(course_id)}
+            )
+            if course:
+                course["id"] = str(course["_id"])
+                return course
+    raise HTTPException(status_code=404, detail="Course not found")

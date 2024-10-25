@@ -1,36 +1,38 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from datetime import datetime
+from enum import Enum
+from typing import List, Optional
+from pydantic import BaseModel, HttpUrl
 
 
-class CourseBase(BaseModel):
-    title: str
-    university: str
-    department: Optional[str]
-    description: Optional[str]
-    credits: Optional[int]
-    prerequisites: Optional[List[str]]
-    url: str
+class IdentifierType(str, Enum):
+    id = "id"
+    class_ = "class"
+    data_init = "data-init"
 
 
-class CourseCreate(CourseBase):
-    pass
+class Identifier(BaseModel):
+    name: str
+    type: IdentifierType
+    value: str
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "type": self.type.value,
+            "value": self.value,
+        }
 
 
-class Course(CourseBase):
-    id: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
+class ScrapingRequest(BaseModel):
+    course_url: HttpUrl
+    identifiers: List[Identifier]
 
 
 class ScrapingJob(BaseModel):
     id: str
     status: str
-    university: str
+    base_url: HttpUrl
+    courses_scraped: Optional[int]
     created_at: datetime
     completed_at: Optional[datetime]
-    total_courses: Optional[int]
     error_message: Optional[str]
