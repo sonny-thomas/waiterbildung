@@ -28,11 +28,6 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
-    healthcheck:
-      test: celery -A app.celery inspect ping
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   celery_flower:
     image: poc-scraper:latest
@@ -45,7 +40,7 @@ services:
       - .:/app
     depends_on:
       celery_worker:
-        condition: service_healthy
+        condition: service_started
 
   mongodb:
     image: mongo:latest

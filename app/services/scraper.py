@@ -172,7 +172,7 @@ class DataExtractor:
             else:
                 logger.warning(f"Could not find {rule.field_name}")
 
-        if found_fields >= (total_fields / 2):
+        if found_fields >= (total_fields * 0.75):
             return data
         return None
 
@@ -210,7 +210,9 @@ async def fetch(session, url):
     try:
         async with session.get(url) as response:
             if response.status == 200:
-                return await response.text(errors="replace")
+                final_url = str(response.url)
+                html_content = await response.text(errors="replace")
+                return html_content, final_url
             else:
                 logger.error(f"Failed to retrieve {url}: Status code {response.status}")
                 return None
@@ -219,57 +221,115 @@ async def fetch(session, url):
         return None
 
 
-async def scrap_course_data(
-    session, url, data_extractor, checked_urls, queue, base_url
-):
+async def ensure_provider_exists(base_url: str, name: str) -> ObjectId:
+    """Ensure educational provider exists in the database and return its ID"""
+    provider = await Database.get_collection("educational_providers").find_one(
+        {"base_url": base_url}
+    )
+
+    if not provider:
+        result = await Database.get_collection("educational_providers").insert_one(
+            {
+                "name": name,
+                "base_url": base_url,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+            }
+        )
+        return result.inserted_id
+
+    return provider["_id"]
+
+
+async def save_course(course_data: Dict[str, Any], provider_id: ObjectId) -> None:
+    """Save course data with reference to provider"""
+    course_data["provider_id"] = provider_id
+    course_data["created_at"] = datetime.now(timezone.utc)
+    course_data["updated_at"] = datetime.now(timezone.utc)
+
+    # Check if course already exists (using URL as unique identifier)
+    existing_course = await Database.get_collection("courses").find_one(
+        {"url": course_data["url"], "provider_id": provider_id}
+    )
+
+    if existing_course:
+        # Update existing course
+        await Database.get_collection("courses").update_one(
+            {"_id": existing_course["_id"]},
+            {"$set": {**course_data, "updated_at": datetime.now(timezone.utc)}},
+        )
+        logger.info(f"Updated existing course: {course_data['url']}")
+    else:
+        # Insert new course
+        await Database.get_collection("courses").insert_one(course_data)
+        logger.info(f"Inserted new course: {course_data['url']}")
+
+
+@dataclass
+class ScrapingContext:
+    """Context for scraping operations"""
+
+    base_url: str
+    provider_id: ObjectId
+    checked_urls: set
+    queue: deque
+    data_extractor: DataExtractor
+
+
+async def scrap_course_data(session, url: str, context: ScrapingContext) -> None:
     """Process individual course pages"""
-    html = await fetch(session, url)
+    html, url = await fetch(session, url)
     if html:
         logger.info(f"Successfully fetched {url}")
 
-        course_data = data_extractor.extract_data(html)
+        course_data = context.data_extractor.extract_data(html)
         if course_data:
             course_data["url"] = url
-            await Database.get_collection(base_url).insert_one(course_data)
-            logger.info(f"Extracted and saved course data from {url}")
+            course_data["content"] = html
+            await save_course(course_data, context.provider_id)
 
+        # Parse links for further crawling
         soup = BeautifulSoup(html, "lxml")
+        parsed_base_url = urlparse(context.base_url)
+
         for tag in soup.find_all("a"):
             href = tag.get("href")
             if href:
                 full_url = urljoin(url, href.split("#")[0])
-                parsed_full_url = urlparse(full_url)
-                parsed_base_url = urlparse(base_url)
+                parsed_url = urlparse(full_url)
 
+                # Check if URL belongs to same domain and hasn't been processed
                 if (
-                    parsed_full_url.netloc == parsed_base_url.netloc
-                    and full_url not in checked_urls
+                    parsed_url.netloc == parsed_base_url.netloc
+                    and full_url not in context.checked_urls
                 ):
-                    checked_urls.add(full_url)
-                    queue.append(full_url)
+                    context.checked_urls.add(full_url)
+                    context.queue.append(full_url)
                     logger.info(f"Added to queue: {full_url}")
 
 
-async def worker(session, queue, checked_urls, data_extractor, base_url):
+async def worker(session, context: ScrapingContext) -> None:
     """Process URLs from the queue"""
-    while queue:
+    while context.queue:
         try:
-            url = queue.popleft()
-            await scrap_course_data(
-                session, url, data_extractor, checked_urls, queue, base_url
-            )
+            url = context.queue.popleft()
+            await scrap_course_data(session, url, context)
         except Exception as e:
             logger.error(f"Error processing URL {url}: {e}")
 
 
-async def process_url(job):
+async def process_url(job: Dict[str, Any]) -> None:
     """Process URLs with the generated schema"""
     base_url = job["base_url"]
     course_url = job["course_url"]
     target_fields = job["target_fields"]
+    provider_name = job.get("provider_name", urlparse(base_url).netloc)
+
+    # Ensure provider exists and get its ID
+    provider_id = await ensure_provider_exists(base_url, provider_name)
 
     async with aiohttp.ClientSession(timeout=ClientTimeout(total=30)) as session:
-        initial_html = await fetch(session, course_url)
+        initial_html, course_url = await fetch(session, course_url)
         if not initial_html:
             logger.error(f"Could not fetch initial page: {course_url}")
             return
@@ -277,24 +337,41 @@ async def process_url(job):
         schema = await generate_schema(initial_html, target_fields)
         data_extractor = DataExtractor(schema)
 
-        checked_urls = {course_url}
-        queue = deque([course_url])
+        # Create scraping context
+        context = ScrapingContext(
+            base_url=base_url,
+            provider_id=provider_id,
+            checked_urls={course_url},
+            queue=deque([course_url]),
+            data_extractor=data_extractor,
+        )
 
-        num_workers = 1000
+        num_workers = 5  # Reduced from 1000 to avoid overwhelming the server
         workers = [
-            asyncio.create_task(
-                worker(session, queue, checked_urls, data_extractor, base_url)
-            )
-            for _ in range(num_workers)
+            asyncio.create_task(worker(session, context)) for _ in range(num_workers)
         ]
         await asyncio.gather(*workers)
 
-    logger.info(f"Completed processing {course_url}. Total URLs: {len(checked_urls)}")
+    logger.info(
+        f"Completed processing {course_url}. Total URLs processed: {len(context.checked_urls)}"
+    )
+
+
+async def worker(session, context: ScrapingContext) -> None:
+    """Process URLs from the queue"""
+    while context.queue:
+        try:
+            url = context.queue.popleft()
+            await scrap_course_data(session, url, context)
+        except Exception as e:
+            logger.error(f"Error processing URL {url}: {e}")
 
 
 async def scrape_university(job_id: str) -> Dict[str, Any]:
     """Main entry point for scraping job"""
     await Database.connect_db()
+
+    # Get and update job status
     job = await Database.get_collection("scraping_jobs").find_one_and_update(
         {"_id": ObjectId(job_id)},
         {"$set": {"status": "in_progress"}},
@@ -303,6 +380,7 @@ async def scrape_university(job_id: str) -> Dict[str, Any]:
 
     await process_url(job)
 
+    # Update job completion status
     await Database.get_collection("scraping_jobs").update_one(
         {"_id": ObjectId(job_id)},
         {
