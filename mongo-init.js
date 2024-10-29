@@ -15,7 +15,7 @@ db.createUser({
     ]
 });
 
-const collections = ["scraping_jobs", "courses"];
+const collections = ["scraping_jobs"];
 
 collections.forEach(collection => {
     db.createCollection(collection);

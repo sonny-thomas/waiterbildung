@@ -41,7 +41,7 @@ class Settings(BaseSettings):
         os.getenv("FLOWER_UNAUTHENTICATED_API", "false").lower() == "true"
     )
 
-    # Application Settings
+    # Apxplication Settings
     APP_NAME: str = os.getenv("APP_NAME", "poc-scraper")
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")

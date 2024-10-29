@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<!--[if IE 7]>         <html lang="de" class="no-js ie7 lte-ie9 lte-ie8 lte-ie7"> <![endif]--><!--[if IE 8]>         <html lang="de" class="no-js ie8 lte-ie9 lte-ie8">         <![endif]--><!--[if IE 9]>         <html lang="de" class="no-js ie9 lte-ie9">                 <![endif]--><!--[if gt IE 9]><!--><html class="no-js" lang="de" xml:lang="de" xmlns="http://www.w3.org/1999/xhtml">
+<!--<![endif]-->
+<head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<title>Umweltwissenschaften und Technologie | FHNW</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="/Plone/++theme++web16theme/assets/css/main-a86cd57daa.min.css" rel="stylesheet"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-57x57.png" rel="apple-touch-icon" sizes="57x57"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-60x60.png" rel="apple-touch-icon" sizes="60x60"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-72x72.png" rel="apple-touch-icon" sizes="72x72"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-76x76.png" rel="apple-touch-icon" sizes="76x76"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-114x114.png" rel="apple-touch-icon" sizes="114x114"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-120x120.png" rel="apple-touch-icon" sizes="120x120"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-144x144.png" rel="apple-touch-icon" sizes="144x144"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-152x152.png" rel="apple-touch-icon" sizes="152x152"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/apple-icon-180x180.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/android-icon-192x192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/favicon-96x96.png" rel="icon" sizes="96x96" type="image/png"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="/Plone/++theme++web16theme/assets/media/icons/device/manifest.json" rel="manifest"/>
+<meta content="#ffffff" name="msapplication-TileColor"/>
+<meta content="assets/media/icons/device/ms-icon-144x144.png" name="msapplication-TileImage"/>
+<meta content="#ffffff" name="theme-color"/>
+<link href="/Plone/++theme++web16theme/assets/css/bundle-79664ee533.css" rel="stylesheet"/>
+<script src="/Plone/++theme++web16theme/assets/js/head-b6db5496dd.min.js"></script>
+<meta content="Umweltwissenschaften und Technologie" property="og:title"/><meta content="website" property="og:type"/><meta content="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie" property="og:url"/><meta content="Chemische und biologische Abläufe kennenlernen und umweltschonende Produktionsverfahren entwickeln." property="og:description"/><meta content="FHNW" property="og:site_name"/><meta content="de_DE" property="og:locale"/><meta content="summary_large_image" property="twitter:card"/><meta content="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie/@@images/image" property="og:image"/><meta content="image/png" property="og:image:type"/><meta content="480" property="og:image:width"/><meta content="300" property="og:image:height"/><meta content="Chemische und biologische Abläufe kennenlernen und umweltschonende Produktionsverfahren entwickeln." name="description"/><meta content="Hochschule für Life Sciences,Institut für Ecopreneurship" name="department"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="Plone - http://plone.com" name="generator"/>
+<link href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie" rel="canonical"/>
+</head>
+<body><div class="page_wrapper">
+<header class="widg_header" data-header-collapsible="true" data-init="header">
+<div class="widg_header_inner_wrapper">
+<a class="anchor-link" href="#maincontent">Skip to main content</a>
+<div class="widg_header__inner-top">
+<div class="widg_header__expander"></div>
+<div class="widg_menubuttons" data-init="menubuttons">
+<a aria-controls="widg_header___cloned" aria-expanded="false" class="widg_menubuttons__menu" data-menubuttons="menu">
+        		Menü
+        	</a>
+<a aria-controls="widg_searchbar-bar" aria-expanded="false" class="widg_menubuttons__search" data-menubuttons="search">
+        		Suche
+        	</a>
+</div>
+<div class="widg_logo" data-init="logo" role="banner">
+<a href="https://www.fhnw.ch/de"><img alt="Logo der Fachhochschule Nordwestschweiz FHNW" src="https://www.fhnw.ch/de/++theme++web16theme/assets/media/img/fachhochschule-nordwestschweiz-fhnw-logo.svg" title="Fachhochschule Nordwestschweiz FHNW"/></a>
+</div>
+<a href="#searchbar-input" id="site_search">Skip to search</a>
+</div>
+<div class="widg_header__nav">
+<nav class="widg_navigation widg_header__hide-on-shrinked" data-init="navigation" role="navigation">
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="0">
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a aria-current="page" class="is_expandable not-default nav_active" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Studium">Studium</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="1">
+<span class="widg_navigation__subtitle">Studium</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Alle Studiengänge">Alle Studiengänge</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="2">
+<span class="widg_navigation__subtitle">Alle Studiengänge</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium" title="Fachbereiche">Fachbereiche</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/bachelor" title="Bachelor-Studiengänge">Bachelor-Studiengänge</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/master" title="Master-Studiengänge">Master-Studiengänge</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/informationsveranstaltungen" title="Info-Anlässe">Info-Anlässe</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/informationen-zum-studium" title="Informationen zum Studium">Informationen zum Studium</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/was-studieren" title="Welches Studium passt zu mir?">Welches Studium passt zu mir?</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/psychologie" title="Angewandte Psychologie">Angewandte Psychologie</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/architektur-bau-geomatik" title="Architektur, Bau und Geomatik">Architektur, Bau und Geomatik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/gestaltung-kunst" title="Gestaltung und Kunst">Gestaltung und Kunst</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/informatik" title="Informatik">Informatik</a>
+</li>
+<li>
+<a aria-current="page" class="not-default nav_active" href="https://www.fhnw.ch/de/studium/lifesciences" title="Life Sciences">Life Sciences</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/musik" title="Musik">Musik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/paedagogik" title="Pädagogik">Pädagogik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/soziale-arbeit" title="Soziale Arbeit">Soziale Arbeit</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/technik" title="Technik">Technik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/studium/wirtschaft" title="Wirtschaft">Wirtschaft</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Weiterbildung">Weiterbildung</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="1">
+<span class="widg_navigation__subtitle">Weiterbildung</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Alle Weiterbildungsangebote">Alle Weiterbildungsangebote</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="2">
+<span class="widg_navigation__subtitle">Alle Weiterbildungsangebote</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung" title="Fachbereiche">Fachbereiche</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/mas" title="MAS - Master of Advanced Studies">MAS - Master of Advanced Studies</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/mba" title="MBA - Master of Business Administration">MBA - Master of Business Administration</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/das" title="DAS - Diploma of Advanced Studies">DAS - Diploma of Advanced Studies</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/cas" title="CAS - Certificate of Advanced Studies">CAS - Certificate of Advanced Studies</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/kurse" title="Weiterbildungskurse">Weiterbildungskurse</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/tagungen" title="Tagungen">Tagungen</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/informationsveranstaltungen" title="Info-Anlässe">Info-Anlässe</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/informationen-zur-weiterbildung" title="Informationen zur Weiterbildung">Informationen zur Weiterbildung</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/psychologie" title="Angewandte Psychologie">Angewandte Psychologie</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/architektur-bau-geomatik" title="Architektur, Bau und Geomatik">Architektur, Bau und Geomatik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/gestaltung-kunst" title="Gestaltung und Kunst">Gestaltung und Kunst</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/informatik" title="Informatik">Informatik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/lifesciences" title="Life Sciences">Life Sciences</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/musik" title="Musik">Musik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/paedagogik" title="Pädagogik">Pädagogik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/soziale-arbeit" title="Soziale Arbeit">Soziale Arbeit</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/technik" title="Technik">Technik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/weiterbildung/wirtschaft" title="Wirtschaft">Wirtschaft</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Forschung und Dienstleistungen">Forschung und Dienstleistungen</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="1">
+<span class="widg_navigation__subtitle">Forschung und Dienstleistungen</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen" title="Zusammenarbeit mit uns">Zusammenarbeit mit uns</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/psychologie" title="Angewandte Psychologie">Angewandte Psychologie</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/architektur-bau-geomatik" title="Architektur, Bau und Geomatik">Architektur, Bau und Geomatik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/gestaltung-kunst" title="Gestaltung und Kunst">Gestaltung und Kunst</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/lifesciences" title="Life Sciences">Life Sciences</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/musik" title="Musik">Musik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/paedagogik" title="Pädagogik">Pädagogik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/soziale-arbeit" title="Soziale Arbeit">Soziale Arbeit</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/technik" title="Technik">Technik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/forschung-und-dienstleistungen/wirtschaft" title="Wirtschaft">Wirtschaft</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Internationales">Internationales</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="1">
+<span class="widg_navigation__subtitle">Internationales</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/internationales" title="Überblick">Überblick</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/internationales/studium" title="Studium">Studium</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/internationales/weiterbildung" title="Weiterbildung">Weiterbildung</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/internationales/forschung" title="Forschung">Forschung</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Die FHNW">Die FHNW</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="1">
+<span class="widg_navigation__subtitle">Die FHNW</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Porträt und Organisation">Porträt und Organisation</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="2">
+<span class="widg_navigation__subtitle">Porträt und Organisation</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/portraet" title="Porträt">Porträt</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/organisation" title="Organisation">Organisation</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/facts-und-figures" title="Facts &amp; Figures">Facts &amp; Figures</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/strategie" title="Strategie">Strategie</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/diversity-gleichstellung" title="Diversity">Diversity</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/nachhaltigkeit" title="Nachhaltigkeit">Nachhaltigkeit</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="is_expandable not-default" data-navigation="entry" data-navigation-is-expandable="true" href="#" title="Hochschulen">Hochschulen</a>
+<div class="widg_navigation__list" data-navigation="list" data-navigation-level="2">
+<span class="widg_navigation__subtitle">Hochschulen</span>
+<ul>
+<li>
+<a class="widg_navigation__entry widg_navigation__back not-default" data-navigation="back" href="#" title=""></a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen" title="Hochschulen der FHNW">Hochschulen der FHNW</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/psychologie" title="Hochschule für Angewandte Psychologie">Hochschule für Angewandte Psychologie</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/architektur-bau-geomatik" title="Hochschule für Architektur, Bau und Geomatik">Hochschule für Architektur, Bau und Geomatik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/hgk" title="Hochschule für Gestaltung und Kunst Basel">Hochschule für Gestaltung und Kunst Basel</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/lifesciences" title="Hochschule für Life Sciences">Hochschule für Life Sciences</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/musik" title="Hochschule für Musik Basel">Hochschule für Musik Basel</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/ph" title="Pädagogische Hochschule">Pädagogische Hochschule</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/soziale-arbeit" title="Hochschule für Soziale Arbeit">Hochschule für Soziale Arbeit</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/ht" title="Hochschule für Technik">Hochschule für Technik</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/hochschulen/hsw" title="Hochschule für Wirtschaft">Hochschule für Wirtschaft</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/alumni-fhnw" title="Alumni FHNW">Alumni FHNW</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/stiftung-fhnw" title="Stiftung FHNW">Stiftung FHNW</a>
+</li>
+<li>
+<a class="not-default" href="https://www.fhnw.ch/de/die-fhnw/veranstaltungen" title="Veranstaltungen">Veranstaltungen</a>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</li>
+<li id="ghost-elem"></li>
+</ul>
+</div>
+</nav>
+</div>
+<div class="widg_header__inner-foot">
+<div class="widg_headerfoot widg_header__hide-on-shrinked">
+<nav class="widg_langswitcher" data-init="langswitcher" id="nav_language_selection" role="navigation">
+<ul aria-labelledby="nav_language_selection" class="list_language_selection">
+<li class="widg_langswitcher__lang is_active">
+<span lang="DE" xml:lang="DE">
+<abbr title="German">DE</abbr>
+<span class="visuallyhidden">Deutsch ist die aktuelle aktive Sprache</span>
+</span>
+</li>
+</ul>
+</nav> <nav aria-label="Metanavigation" class="widg_headermetanavigation" data-init="headermetanavigation" role="navigation">
+<ul>
+<li class="widg_headermetanavigation__item">
+<a class="pat-plone-modal" data-pat-plone-modal='{"prependContent": ".portalMessage", "title": "Standorte", "width": "26em"}' href="https://www.fhnw.ch/de/die-fhnw/standorte">
+<span>Standorte und Kontakt</span>
+</a>
+</li>
+<li class="widg_headermetanavigation__item">
+<a class="pat-plone-modal" data-pat-plone-modal='{"prependContent": ".portalMessage", "title": "Bibliothek FHNW", "width": "26em"}' href="https://www.fhnw.ch/de/die-fhnw/bibliothek-fhnw">
+<span>Bibliothek FHNW</span>
+</a>
+</li>
+<li class="widg_headermetanavigation__item">
+<a class="pat-plone-modal" data-pat-plone-modal="{}" href="https://www.fhnw.ch/de/karriere">
+<span>Karriere an der FHNW</span>
+</a>
+</li>
+<li class="widg_headermetanavigation__item">
+<a class="pat-plone-modal" data-pat-plone-modal="{}" href="https://www.fhnw.ch/de/medien">
+<span>Medien</span>
+</a>
+</li>
+</ul>
+</nav>
+<div aria-label="Social Media" class="widg_somelinks" data-init="somelinks">
+<a data-somelink-target="fb" href="https://www.facebook.com/fhnw.ch" target="_blank" title="FHNW auf Facebook"></a>
+<a data-somelink-target="instagram" href="https://www.instagram.com/fhnw.ch/" target="_blank" title="FHNW auf Instagram"></a>
+<a data-somelink-target="tw" href="https://twitter.com/FHNW" target="_blank" title="FHNW auf X"></a>
+<a data-somelink-target="linkedin" href="https://www.linkedin.com/school/fachhochschule-nordwestschweiz-fhnw/" target="_blank" title="FHNW auf LinkedIn"></a>
+<a data-somelink-target="youtube" href="https://www.youtube.com/@FHNW" target="_blank" title="FHNW auf Youtube"></a>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="widg_actionbuttons" data-init="actionbuttons">
+<div class="widg_searchbar" data-init="searchbar">
+<button class="widg_searchbar__btn widg_actionbutton__item not-default" data-searchbar="btn" type="button">
+		Suchen
+	</button>
+</div>
+<div class="widg_searchbar-bar show-intro" data-searchbar="bar" role="search"></div>
+</div>
+<div class="layout_wrapper" id="main">
+<div class="hero">
+<div class="widg_hero" data-init="hero">
+<div class="widg_hero__wrapper">
+<img class="widg_hero__img" data-hero-cutting-option="default" id="widg_hero__image" src="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie/media/ut_header_2.jpg/@@images/image/f_fullwidthtop"/>
+</div>
+<nav class="widg_breadcrumb" data-init="breadcrumb">
+<ul>
+<li class="is_home">
+<a alt="FHNW" class="not-default" href="https://www.fhnw.ch"></a>
+</li>
+<li class="">
+<a alt="Studium" class="not-default" data-pt-title="Studium" href="https://www.fhnw.ch/de/studium">
+						Studium
+					</a>
+</li>
+<li class="">
+<a alt="Life Sciences" class="not-default" data-pt-title="Life Sciences" href="https://www.fhnw.ch/de/studium/lifesciences">
+						Life Sciences
+					</a>
+</li>
+<li class="">
+<a alt="Bachelorstudiengang Life Sciences" class="not-default" data-pt-title="Bachelorstudiengang Life Sciences" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor">
+						Bachelorstudiengang Life Sciences
+					</a>
+</li>
+<li class="">
+<p data-pt-title="Umweltwissenschaften und Technologie">Umweltwissenschaften und Technologie</p>
+</li>
+<li>
+<p style="width: 10px; height: 10px;"></p>
+</li>
+</ul>
+<span aria-hidden="true" data-breadcrumb="extendstring" style="display: none"></span>
+</nav>
+</div>
+</div>
+<div class="layout_content"><div class="page_content" id="first_page_content">
+<h1>Umweltwissenschaften und Technologie</h1>
+<p class="text__lead">Chemische und biologische Abläufe kennenlernen und umweltschonende Produktionsverfahren entwickeln.</p><div class="content__element edu__product"><div class="widg_edu_contents" data-init="edu_contents" data-nav-application="Anmeldung" data-nav-contact="Kontakt" data-nav-events="Info-Anlässe">
+<div class="edu__content" data-sidebar="content">
+<div class="object__title" data-init="keydata" data-lang-show-less="Weniger anzeigen" data-lang-show-more="Mehr anzeigen" data-sidebar="title">
+<h2 class="edu__title" id="edu_title">Eckdaten</h2>
+</div>
+<dl class="edu__key_data">
+<div class="datas">
+<dt>Abschluss</dt>
+<dd>Bachelor of Science in Life Sciences</dd>
+</div>
+<div class="datas">
+<dt>ECTS-Punkte</dt>
+<dd>180</dd>
+</div>
+<div class="datas">
+<dt>Studienmodus</dt>
+<dd>Vollzeit und Teilzeit</dd>
+</div>
+<div class="datas">
+<dt>Unterrichtstage</dt>
+<dd>Montag bis Freitag</dd>
+</div>
+<div class="datas">
+<dt>Unterrichtssprache</dt>
+<dd>Deutsch</dd>
+</div>
+<div class="datas">
+<dt>Ort</dt>
+<dd>Muttenz</dd>
+</div>
+<div class="datas">
+<dt>Auslandsaufenthalt</dt>
+<dd>ist möglich</dd>
+</div>
+<div class="datas">
+<dt>Anmeldegebühr</dt>
+<dd>CHF 200</dd>
+</div>
+</dl>
+<div class="toggler">
+<a class="show-more button small_button"></a>
+</div>
+</div>
+<div class="edu__info">
+<p class="edu__info_icon"> </p>
+<p class="edu__info_message">Die Anmeldefrist läuft bis zum 31. Mai. Die Studienplatzzahl ist festgelegt.</p>
+</div>
+<div class="edu__details">
+<div class="widg_edu_events" data-init="edu_events" data-sidebar="object">
+<div class="align__btn">
+<a class="btn small_button" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/bachelor-info-anlaesse">
+<span>Zu den Info-Anlässen</span>
+</a>
+</div>
+</div>
+<div class="widg_edu_application" data-init="edu_application">
+<div class="align__btn">
+<a class="btn small_button" href="https://onla.fhnw.ch/info/index.html?lang=de-CH&amp;idanlass=9752489" target="_blank">
+<span>Anmeldung zum Studium</span>
+</a>
+</div>
+</div>
+</div>
+</div></div>
+<div class="content__element">
+<p>Umweltwissenschaften und Technologie beschäftigen sich mit der Analyse, Bewertung und Lösung von Umweltproblemen. Dazu gehören die Ursachenforschung, die ökologische Produktion von Gütern und das Ressourcenmanagement.</p><p>Die Studienrichtung an der Schnittstelle zwischen Umwelt und Technik vermittelt die technischen Grundlagen, die es braucht, um bei der Produktion von Gütern Umweltprobleme vorbeugend oder lösungsorientiert bearbeiten zu können. Dafür werden Kenntnisse über Schadstoffe und deren Auswirkung auf Mensch und Umwelt genauso benötigt, wie die Fähigkeit, Umweltrisiken einzuschätzen und Ressourcen auf nachhaltige Weise sinnvoll einzuteilen.</p><p>Studierende dieser Studienrichtung beschäftigen sich beispielsweise mit folgenden Fragen: Welche Auswirkungen haben Schadstoffe auf Organismen in der Umwelt? Wie kann man Abwasser effizient klären? Wie schafft es die Industrie, umweltfreundlicher und effizienter zu produzieren? Wie kann man kontaminierte Böden säubern?</p>
+</div>
+<div><div class="widg_infobox has-img" data-init="infobox">
+<div class="infobox__img">
+<img alt="" src="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie/@@fhnw.tiles.wi_060_infobox/ccc47a26d5f64a4ea74cef755e2d2897/@@images/75dd2b68-d010-40d9-b820-b355b9a6854d.png"/>
+</div>
+<div class="infobox__content">
+<h2>Info-Anlass</h2>
+<p>Komm an einen Info-Anlass und erfahre mehr über das Studium.</p>
+<a class="button infobox__button" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/bachelor-info-anlaesse">jetzt zum Info-Anlass anmelden</a>
+</div>
+</div>
+</div>
+<div class="content__element">
+<h2>
+<a class="mce-item-anchor" id="anker_zulassung" name="zulassung"></a>Zulassung</h2>
+<p>Die Zulassungsbedingungen unterscheiden sich je nach Vorbildung:</p>
+</div>
+<div class="content__element content__element___borderless"><div class="widg_accordeon" data-init="accordeon">
+<!-- Custom html structure if its the accordeon for an online application. -->
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Berufsmatura" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Berufsmatura
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<table class="content__table"><tbody><tr><td style="width: 35%;"><p>Richtungen</p></td><td><p><br/></p></td><td style="width: 67%;"><p><br/></p></td></tr><tr><td style="width: 35%;"><ul><li>Gesundheit und Soziales</li><li>Natur, Landschaft und Lebensmittel<br/></li><li>Technik, Architektur, Life Sciences</li></ul></td><td><p><br/></p></td><td style="width: 67%;"><p>Direkte Zulassung zum Studium, falls abgeschlossene Lehre im Studienbereich.</p></td></tr><tr><td style="width: 35%;"><p>andere Richtungen</p></td><td><p><br/></p></td><td style="width: 67%;"><p>Einjährige Arbeitswelterfahrung erforderlich, die Kenntnisse in einem der Studienrichtung Umweltwissenschaften und Technologie verwandten Beruf vermittelt.</p></td></tr></tbody></table><p><br/></p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Fachmaturität" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Fachmaturität
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<table class="content__table"><tbody><tr><td style="width: 25%;"><p>Richtung Gesundheit/Naturwissenschaften <br/></p></td><td><p><br/></p></td><td style="width: 73%;"><p>Direkte Zulassung zum Studium.</p></td></tr><tr><td style="width: 25%;"><p>andere Richtungen</p></td><td><p><br/></p></td><td style="width: 73%;"><p>Einjährige Arbeitswelterfahrung erforderlich, die Kenntnisse in einem der Studienrichtung Umweltwissenschaften und Technologie verwandten Beruf vermittelt.</p></td></tr></tbody></table>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Eidg_anerkanntes_Diplom_HF__Höhere_Fachschule_HF" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Eidg. anerkanntes Diplom HF / Höhere Fachschule HF
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Direkte Zulassung zum Studium, falls Lehre in Studienbereich.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Gymnasiale_Matur__Abitur__Baccalauréat_CH__D__F" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Gymnasiale Matur  / Abitur / Baccalauréat (CH / D / F)
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Einjährige Arbeitswelterfahrung erforderlich, die Kenntnisse in einem der Studienrichtung Umweltwissenschaften und Technologie verwandten Beruf vermittelt.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Fachhochschulreife_D" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Fachhochschulreife (D)
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Ansonsten einjährige Arbeitswelterfahrung erforderlich, die Kenntnisse in einem der Studienrichtung Umweltwissenschaften und Technologie verwandten Beruf vermittelt.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Alle_anderen" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Alle anderen
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Bewerbende, welche die oben genannten Bedingungen nicht erfüllen, werden auf die berufsbegleitende Berufsmaturität oder Fachhochschulreife (deutsches System) verwiesen. Eine Aufnahmeprüfung als Ersatz wird nicht angeboten. Bei weiteren Fragen wenden Sie sich bitte an die zuständige <a href="https://www.fhnw.ch/de/personen/miriam-langer" rel="noopener" target="_blank">Studiengangleitung</a>.</p><div class="mce-resizehandle" id="mceResizeHandlenw" style="cursor: nw-resize; margin: 0px; padding: 0px; left: -4.5px; top: 300.5px;"></div><div class="mce-resizehandle" id="mceResizeHandlene" style="cursor: ne-resize; margin: 0px; padding: 0px; left: 1143px; top: 300.5px;"></div><div class="mce-resizehandle" id="mceResizeHandlese" style="cursor: se-resize; margin: 0px; padding: 0px; left: 1143px; top: 403.5px;"></div><div class="mce-resizehandle" id="mceResizeHandlesw" style="cursor: sw-resize; margin: 0px; padding: 0px; left: -4.5px; top: 403.5px;"></div>
+</div>
+</div>
+</div></div>
+<div><div class="content__element content__element___bleed content__element___borderless"><div class="widg_blockquote" data-init="blockquote">
+<div class="blockquote__quote">
+<p>Angesichts der grossen Herausforderungen (der Menschheit) bezüglich aktueller und künftiger Umweltprobleme werden umwelttechnologische Ansätze wichtige Lösungen mit einbringen. Absolvent*innen können ihren Beitrag leisten und sich in einem spannenden, vielfältigen und rasch entwickelndem Feld etablieren.</p>
+<span class="blockquote__author">Prof. Dr. Miriam Langer, Studiengangleitung</span>
+</div>
+</div></div>
+</div>
+<div class="content__element">
+<h2><a class="mce-item-anchor" id="anker_details" name="details"></a>Details zum Studium</h2><p>Die Studienrichtung Umweltwissenschaften und Technologie zielt darauf ab, die Studierenden für den nachhaltigen Umgang mit Umweltproblemen auszubilden. Dabei ist es zentral, dass Umweltprobleme analysiert, verstanden und bewertet werden können. Das Studium vermittelt Kenntnisse zur Entwicklung von Techniken, die es ermöglichen, Umweltprobleme zu vermeiden (Prävention) oder zu lösen (Kuration). Ein besonderes Augenmerk liegt dabei auf der nachhaltigen Güterproduktion: Bereits bei der Gewinnung und Verarbeitung von Rohstoffen, beziehungsweise bei der Produktion von Gütern sollen über eigens entwickelte Technologien Umweltprobleme bearbeitet werden.</p>
+</div>
+<!-- frontend -->
+<div class="content__element">
+<div class="tileItem tile-id-einblicke-ins-studium">
+</div>
+<div class="responsive-video no-title">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/3-A4CNYdQg0?si=DF_C4IkW7c0z5P9a" title="YouTube video player" width="560"></iframe>
+</div>
+</div>
+<!-- webcms -->
+<div class="content__element">
+<p>Umwelttechnologie studieren beudeutet auch zukünftige Verantwortung für unsere Umwelt tragen: <a href="https://www.youtube.com/watch?v=lo_1bhR1dk8" rel="noopener" target="_blank">Film anschauen﻿</a><br/></p>
+</div>
+<div class="content__element content__element___borderless"><div class="widg_accordeon" data-init="accordeon">
+<!-- Custom html structure if its the accordeon for an online application. -->
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Aufbau_des_Studiums" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Aufbau des Studiums
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Das Studium besteht aus thematisch zusammengefassten Modulen (Vorlesungen und Praktika). Von jeder Modulgruppe muss eine Anzahl Veranstaltungen ausgewählt und bestanden werden. Der Fokus liegt auf an die Studienrichtung Umwelttechnologie angepassten ingenieurtechnischen bzw. naturwissenschaftlichen Modulen und wird durch Veranstaltungen in Informatik, Betriebswirtschaft, Methodik und Soft Skills ergänzt. Durch die Wahl von drei interdisziplinären, d. h. nicht der Studienrichtung zugeordneten Modulen können die Studierenden ihr Studium individuell erweitern und einen Perspektivenwechsel vollziehen.</p><p>In regelmässig stattfindenden Referaten von Forschenden aus der Industrie und dem universitären Umfeld erhalten die Studierenden Einblicke in aktuelle Tätigkeiten und Praktiken der vielfältigen Life Sciences.</p><p>Weitere Details entnehmen Sie bitte dem <a href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/media/studienfuehrer-ut-hls-fhnw" rel="noopener" target="_blank">Studienführer</a>.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Studienschwerpunkte__Spezialisierungen" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Studienschwerpunkte / Spezialisierungen
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Die Studienrichtung Umweltwissenschaften und Technologie vermittelt fundiertes Wissen in nachhaltiger Ressourcenwirtschaft, Umweltverfahrenstechnik sowie Umweltbiotechnologie, um innovative Lösungen für den Schutz unserer Umwelt zu entwickeln. Weitere Schwerpunkte sind Cleaner Production, Abfall- und Kreislaufwirtschaft, Biosicherheit und Risikomanagement. <br/>Durch gezielte Modulauswahl können Studierende eine Spezialisierung in Umweltwissenschaften oder Umweltingenieurwesen entwickeln.</p><p>Studierende haben die Möglichkeit, ihre Ausbildung mit einer Querschnittsqualifikation in Digitalisierung zu erweitern. <br/></p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Übersicht_Module" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Übersicht Module
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p><a class="button button__secondary tiny_link_button_secondary" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie/media/modulbeschreibungen-ut-hls-fhnw" rel="noopener" target="_blank">Modulkatalog (PDF)﻿</a><br/></p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Studiendauer_Voll_und_Teilzeit" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Studiendauer (Voll- und Teilzeit)
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Das Vollzeitstudium dauert in der Regel sechs Semester. Im Teilzeitmodell kann der Studiengang auch berufsbegleitend absolviert werden und dauert maximal 12 Semester.</p><p>Neben dem Studium ist eine Berufstätigkeit mit einem Pensum von bis zu 50% möglich. Der Stundenplan fürs Teilzeitstudium wird gemeinsam mit dem Studiengangleiter individuell für jedes Semester zusammengestellt. Basis ist der Vollzeitstundenplan. Es gibt keine zusätzlichen Lehrveranstaltungen, welche nur von berufsbegleitend Studierenden besucht werden.</p><p>Die Tabelle zeigt exemplarisch die möglichen Studienabläufe:</p><p><img alt="Die Tabelle zeigt exemplarisch die möglichen Studienabläufe." class="image-inline" height="662" src="https://www.fhnw.ch/de/studium/lifesciences/bachelor/media/teilzeitstudium.jpg/@@images/31b15b5f-d64f-4a89-8c4d-65fb6ff29f2b.jpeg" title="Teilzeitstudium.jpg" width="575"/></p><p>Mit der individuellen Planung kann auf die wechselnden Anforderungen des jeweiligen Arbeitgebers reagiert werden. Die Stundenbelegung an der Hochschule kann über die Studiendauer auch variiert werden. Somit sind wechselnde Teilzeitpensen beim Arbeitgeber während der Studiendauer möglich.</p><p>Wichtig ist, dass die Studierenden die Zeiten für den Präsenzunterricht (Vorlesungen, Praktika etc.), die Zeiten für die Vor- und Nachbereitung des Unterrichts und auch die Zeiten für Vorbereitung und Durchführung von Prüfungsleistungen rechtzeitig planen und mit der beruflichen Tätigkeit in Einklang bringen.</p><p>Einige der im Rahmen des Studiums erforderlichen praktischen Anteile (z. B. Praxisprojekt oder Bachelor-Thesis) können nach Absprache auch beim Arbeitgeber durchgeführt werden.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Praxis" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Praxis
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Die Hochschule liegt mitten in einem der grössten europäischen Life Sciences-Standorte und ist bestens vernetzt mit der Industrie. Während des ganzen Studiums sind die Studierenden aktiv involviert in spannende Forschungsprojekte der Hochschule mit Industriepartnern. Mindestens ein Drittel des Studiums besteht aus praktischen Arbeiten wie Praktika oder Projektarbeiten. Damit sind unsere Absolventinnen und Absolventen bestens vorbereitet für eine erfolgreiche Karriere in den Life Sciences.</p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Weiterführende_Studiengänge" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Weiterführende Studiengänge
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p><a href="https://www.fhnw.ch/en/degree-programmes/lifesciences/master/environmental-technologies" rel="noopener" target="_blank">Master Environmental Technologies (Englisch)</a><br/></p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Gute_Gründe_für_ein_Studium_an_unserer_Hochschule" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Gute Gründe für ein Studium an unserer Hochschule
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p><a href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/gute-gruende-fuer-ein-studium-an-unserer-hochschule">Darum solltest du dich unter anderem für ein Bachelor-Studium an der Hochschule für Life Sciences FHNW entscheiden.</a><br/></p>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Termine_und_Fristen" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Termine und Fristen
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<ul><li>Das Studium kann jeweils im Herbstsemester begonnen werden. Die Anmeldung sollte online bis Ende Mai erfolgen. Eine Anmeldung mit unvollständigen Unterlagen (z.B. laufendes Praktikum) ist jederzeit möglich. Fehlende Unterlagen können sobald verfügbar nachgereicht werden, spätestens bis 1. Woche vor Studienstart.</li><li>Obligatorische Sicherheitseinweisungen für den Laborbetrieb (ganztägig) finden für Neustudierende in der Woche vor Semesterbeginn (Kalenderwoche 37) jeweils am Donnerstag und Freitag statt.</li></ul>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Studiengebühr" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Studiengebühr
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<table class="content__table"><tbody><tr><td style="width: 75%;"><p>Studiengebühr pro Semester für folgende Studierende:                     <br/></p><ul><li>Schweizerinnen und Schweizer, Studierende, die ihren zivilrechtlichen Wohnsitz bei Studienbeginn in der Schweiz haben.</li><li>Studierende, die den Nachweis erbringen, dass ihre Eltern bei Studienbeginn zivilrechtlichen Wohnsitz in der Schweiz haben.                                         </li><li>Mündige Flüchtende und Staatenlose mit zivilrechtlichem Wohnsitz in der Schweiz</li></ul></td><td style="width: 25%;">CHF 700</td></tr><tr><td style="width: 75%;"><p>Studiengebühr pro Semester für Studierende, die ihren zivilrechtlichen Wohnsitz bei Studienbeginn in der EU/EFTA haben.</p></td><td style="width: 25%;" width="20%"><p>CHF 1'000</p></td></tr><tr><td style="width: 75%;"><p>Studiengebühr pro Semester für Studierende, die ihren zivilrechtlichen Wohnsitz bei Studienbeginn weder in der Schweiz noch in einem EU/EFTA-Staat haben.</p></td><td style="width: 25%;" width="20%"><p>CHF 5'000</p></td></tr><tr><td colspan="2" style="width: 50%;"><p>Die vollen Semestergebühren sind fällig, wenn die Abmeldung oder der Exmatrikulationsantrag nicht bis eine Woche nach Semesterbeginn bei der FHNW eingetroffen ist.</p></td></tr></tbody></table>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Studienplatzzahl" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Studienplatzzahl
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<p>Die Studienplatzzahl ist festgelegt. Anmeldungen werden in der Reihenfolge ihres Eingangs sowie nach passender Qualifikation / Vorbildung berücksichtigt. Bei Erreichung der Maximal-Studierendenzahl in der jeweiligen Studienrichtung werden Wartelisten geführt.</p>
+</div>
+</div>
+</div></div>
+<div class="content__element">
+<h2><a class="mce-item-anchor" id="digital" name="anker_digital"></a>Digital Life Sciences</h2><p>Im Bachelor-Studium an unserer Hochschule befasst du dich mit aktuellen gesellschaftlichen, naturwissenschaftlichen und technischen Fragestellungen und lernst innovative Lösungen zu finden. Über ein Drittel der Ausbildungszeit ist Laborpraktika, Projektarbeiten und der Bachelorarbeit, oft in Zusammenarbeit mit Partnerfirmen, gewidmet. Die praxisorientierte Bachelor-Arbeit bildet den Abschluss deines Studiums.</p><p>Mit der Wahl von fünf Modulen und der Ausrichtung des Praxissemesters (6. Semester) auf ein Thema rund um Digitalisierung hast du die Möglichkeit, deine digitalen Skills im Life Sciences Bereich zu entwickeln und eine Querschnittsqualifikation in Digitalisierung zu erwerben.<br/><a class="button button__secondary tiny_link_button_secondary" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/digital-life-sciences">Hier geht es zur Modul-Übersicht.﻿</a><br/></p>
+</div>
+<div><div class="content__element has_grid"><div class="widg_teaser__main_wrapper">
+<h2 class="teaser__title">Einblicke ins Studium - Studierende erzählen</h2>
+<div class="widg_teaser__wrapper">
+<div class="widg_teaser wide___third">
+<div class="widg_teaser__col1">
+<div class="widg_teaser__img">
+<img alt="" src="https://www.fhnw.ch/de/studium/lifesciences/erfahrungsberichte/aus-klaerschlamm-wird-filter-fuer-abwasser/@@images/image/f_teaser"/>
+</div>
+</div>
+<div class="widg_teaser__col2">
+<h3 class="widg_teaser__title childless">Aus Klärschlamm wird Filter für Abwasser</h3>
+</div>
+<a class="widg_teaser__link" href="https://www.fhnw.ch/de/studium/lifesciences/erfahrungsberichte/aus-klaerschlamm-wird-filter-fuer-abwasser">zu Aus Klärschlamm wird Filter für Abwasser</a>
+<span class="widg_teaser__arrow"></span>
+</div>
+<div class="widg_teaser wide___third">
+<div class="widg_teaser__col1">
+<div class="widg_teaser__img">
+<img alt="" src="https://www.fhnw.ch/de/studium/lifesciences/erfahrungsberichte/interview-mit-markus-erne/@@images/image/f_teaser"/>
+</div>
+</div>
+<div class="widg_teaser__col2">
+<h3 class="widg_teaser__title childless">Interview mit Markus Erne</h3>
+</div>
+<a class="widg_teaser__link" href="https://www.fhnw.ch/de/studium/lifesciences/erfahrungsberichte/interview-mit-markus-erne">zu Interview mit Markus Erne</a>
+<span class="widg_teaser__arrow"></span>
+</div>
+</div>
+</div></div>
+</div>
+<div><div class="content__element content__element___bleed content__element___borderless"><div class="widg_blockquote" data-init="blockquote">
+<div class="blockquote__quote">
+<p>Die Dozierenden planen einen abwechslungsreichen Unterricht. Sie sind sehr engagiert und setzen sich für die Studierenden ein.</p>
+<span class="blockquote__author">Markus Erne, ehemaliger Student</span>
+</div>
+</div></div>
+</div>
+<div class="content__element content__element___borderless"><div class="widg_accordeon" data-init="accordeon">
+<!-- Custom html structure if its the accordeon for an online application. -->
+<h2 id="Perspektiven">Perspektiven</h2>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Kompetenzen" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Kompetenzen
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<ul><li>Identifizieren und Analysieren von Umweltproblemen und -risiken</li><li>Kenntnisse verschiedener umwelt- und biotechnischer Methoden und Technologien</li><li>Planung, Dokumentation und Durchführung von Versuchen in Umwelttechnik, Umweltbiotechnologie und Ökotoxikologie</li><li>Aufarbeitung, Analyse und Beurteilung von Daten und Informationen sowie deren Kommunikation</li><li>Teamfähigkeit und interdisziplinäre Zusammenarbeit</li><li>Wissenschaftliche Ethik und wissenschaftliches Qualitätsbewusstsein</li><li>Projektplanung und -management</li><li>Identifizieren und Analysieren von Umweltproblemen und -risiken<br/></li></ul>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Einsatzgebiete" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Einsatzgebiete
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<ul><li>Umweltberatung (national, international)</li><li>Projektassistenz / Projektingenieur in umweltbezogenen Projekten</li><li>Betriebsassistenz / Betriebsingenieur (z.B. Wasserversorgung, Gewässerschutz)</li><li>Produktmanagement und technischer Vertrieb</li><li>Sachbearbeitung in Ämtern und bei Behörden für Umweltschutz</li><li>Laborleitung</li><li>Qualitäts- und Umweltmanagement</li><li>Angewandte Forschung (Verfahrens- / Technologieentwicklung, Analytik)</li></ul>
+</div>
+</div>
+<div class="widg_accordeon__entry mce-item-anchor" data-accordeon="entry" id="Branchen" role="listitem">
+<button aria-expanded="false" class="not-default" data-accordeon="button">
+				Branchen
+      </button>
+<div aria-hidden="true" class="widg_accordeon__content" data-accordeon="content">
+<ul><li>Life-Sciences- und produzierende Industrie (Umwelt, Gesundheit, Sicherheit)</li><li>Anlagenbetreiber (Wasserversorgung, Abwasserbehandlung, Abfallbehandlung)</li><li>Planungs-, Beratungs- und Ingenieurbüros</li><li>Umweltverwaltungen von Bund, Kanton, Gemeinden</li><li>Umwelttechnologieanbieter</li><li>Nichtregierungsorganisationen</li><li>Versicherungen und Finanzinstitutionen (Umweltrisikoanalysen)</li></ul>
+</div>
+</div>
+</div></div>
+<div class="content__element">
+<h2><a class="mce-item-anchor" id="anker_studienfuehrer" name="studienfuehrer"></a>Studienführer</h2>
+</div>
+<!-- frontend -->
+<div class="content__element">
+<div class="tileItem tile-id-studienfuhrer">
+</div>
+<div class="responsive-video no-title">
+<div><iframe allowfullscreen="true" src="https://e.issuu.com/embed.html?d=hls_ut_2022-23_web&amp;u=fhnw"></iframe></div>
+</div>
+</div>
+<!-- webcms -->
+<div class="content__element">
+<ul><li><a href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/media/studienfuehrer-ut-hls-fhnw" rel="noopener" target="_blank">Studienführer als pdf</a>﻿<a href="../../../../../resolveuid/bb115d2d323e4bd8af3d86201d279f38"></a><br/></li><li><a href="https://www.fhnw.ch/de/studium/studien-und-pruefungsordnungen-der-hochschulen-fhnw#hls">Studien- und Prüfungsordnung</a><br/></li></ul>
+</div>
+<div><div class="content__element"><div class="widg_follow_us" data-init="follow_us">
+<h2>Social Media Kanäle der Hochschule für Life Sciences</h2>
+<div class="follow_us">
+<ul class="not-default">
+<li>
+<a class="follow__facebook" href="http://www.facebook.com/LifeSciencesFHNW" target="_blank">Facebook</a>
+</li>
+<li>
+<a class="follow__instagram" href="http://www.instagram.com/lifesciences_fhnw/" target="_blank">Instagram</a>
+</li>
+<li>
+<a class="follow__youtube" href="https://www.youtube.com/channel/UCfsTW-1ngKdjFu85VofhGkA" target="_blank">YouTube</a>
+</li>
+<li>
+<a class="follow__linkedin" href="https://www.linkedin.com/company/lifesciences_fhnw/" target="_blank">Linkedin</a>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+<div>
+</div>
+</div><div class="widg_subnav" data-init="subnav">
+<div class="widg_subnav__title has-subtitle">
+<div class="widg_subnav__main-link">
+<a href="https://www.fhnw.ch/de/studium">
+<h2>Studium</h2>
+</a>
+</div>
+<div class="widg_subnav__subtitle">
+<a href="https://www.fhnw.ch/de/studium/lifesciences">
+<span>Life Sciences</span>
+</a>
+</div>
+</div>
+<div class="widg_subnav__list">
+<ul>
+<li>
+<a class="" href="/de/studium/lifesciences/bachelor/umwelttechnologie#details">Details zum Studium</a>
+</li>
+<li>
+<a class="" href="/de/studium/lifesciences/bachelor/umwelttechnologie#zulassung">Zulassung</a>
+</li>
+<li>
+<a class="" href="/de/studium/lifesciences/bachelor/umwelttechnologie#studienfuehrer">Studienführer</a>
+</li>
+<li>
+<a class="" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umwelttechnologie#digital">Digital Life Sciences</a>
+</li>
+<li>
+<a class="" href="https://www.fhnw.ch/de/studium/lifesciences/bachelor/umweltwissenschaften-und-technologie/copy_of_innovative-technologien">Stimmen aus diesem Fachbereich</a>
+</li>
+<li>
+<a class="is_back" href="/de/studium/lifesciences/bachelor">Übersicht Bachelor</a>
+</li>
+</ul>
+</div>
+</div><div class="widg_sidebar" data-init="sidebar" role="complementary">
+<div class="widg_sidebar__content">
+<div class="widg_edu_contact widg_sidebar__object" data-init="edu_contact" data-sidebar="object">
+<div class="object__title" data-sidebar="title">
+<h2 class="edu__contact">Kontakt</h2>
+</div>
+<div class="object__content" data-sidebar="content">
+<div class="contact__wrapper">
+<a href="https://www.fhnw.ch/de/personen/studierendenadministration-lifesciences" target="_self">
+<div class="img-hover-zoom">
+<img alt="Studierendenadministration Life Sciences" src="https://www.fhnw.ch/de/personen/studierendenadministration-lifesciences/@@images/portrait_foto/f_sidebar"/>
+</div>
+</a>
+<dl>
+<dt class="contact__name">
+<a href="https://www.fhnw.ch/de/personen/studierendenadministration-lifesciences">
+<p>Studierendenadministration Life Sciences</p>
+</a>
+</dt>
+<dd></dd>
+<div class="inline__wrapper">
+<div class="telephone__wrapper">
+<dt>Telefonnummer</dt>
+<dd class="contact__phone">
+<a href="tel:+41 61 228 56 02">+41 61 228 56 02</a>
+								(Direkt)
+							</dd>
+<dd class="contact__phone last">
+<a href="tel:+41 61 228 54 05">+41 61 228 54 05</a>
+								(Direkt)
+							</dd>
+</div>
+<div class="data__wrapper">
+<dt>E-Mail</dt>
+<dd><a href="geomailto:c3R1ZGllcmVuZGVuYWRtaW5pc3RyYXRpb24ubGlmZXNjaWVuY2VzQGZobncuY2g=" rel="nofollow"><span class="geomailaddress">c3R1ZGllcmVuZGVuYWRtaW5pc3RyYXRpb24ubGlmZXNjaWVuY2VzQGZobncuY2g=</span></a></dd>
+<dd>Fachhochschule Nordwestschweiz<br/>Campus Muttenz<br/>Hofackerstrasse 30<br/>4132 Muttenz</dd>
+</div>
+</div>
+</dl>
+</div>
+</div>
+</div>
+<div class="widg_edu_contact widg_sidebar__object" data-init="edu_contact" data-sidebar="object">
+<div class="object__title" data-sidebar="title">
+<h2 class="edu__contact">Studiengangleitung</h2>
+</div>
+<div class="object__content" data-sidebar="content">
+<div class="contact__wrapper">
+<a href="https://www.fhnw.ch/de/personen/miriam-langer" target="_self">
+<div class="img-hover-zoom">
+<img alt="Prof. Dr. Miriam Langer" src="https://www.fhnw.ch/de/personen/miriam-langer/@@images/portrait_foto/f_sidebar"/>
+</div>
+</a>
+<dl>
+<dt class="contact__name">
+<a href="https://www.fhnw.ch/de/personen/miriam-langer">
+<p>Prof. Dr. Miriam Langer</p>
+</a>
+</dt>
+<dd></dd>
+<div class="inline__wrapper">
+<div class="telephone__wrapper">
+<dt>Telefonnummer</dt>
+<dd class="contact__phone last">
+<a href="tel:+41 61 228 58 83">+41 61 228 58 83</a>
+								(Direkt)
+							</dd>
+</div>
+<div class="data__wrapper">
+<dt>E-Mail</dt>
+<dd><a href="geomailto:bWlyaWFtLmxhbmdlckBmaG53LmNo" rel="nofollow"><span class="geomailaddress">bWlyaWFtLmxhbmdlckBmaG53LmNo</span></a></dd>
+<dd>Hochschule für Life Sciences FHNW<br/>Institut für Ecopreneurship<br/>Hofackerstrasse 30<br/>4132 Muttenz</dd>
+</div>
+</div>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div><div class="content__element content__element___bleed content__element___top-bordered" id="locations">
+<div class="bleed__inner site-has-sidebar">
+</div>
+<nav class="widg_location__nav nav__state">
+<ul data-location_slider="nav-list" id="mapnavi">
+<li>
+<button data-coordinates-x="7.641871" data-coordinates-y="47.534827" data-location_slider="nav-option" id="0">Standort Muttenz</button>
+</li>
+<div class="widg_location__nav-bar" data-location_slider="bar"></div>
+</ul>
+</nav>
+<div class="widg_location_slider" data-init="location_slider" data-maps-marker="/++theme++web16theme/assets/media/img/maps_marker.png">
+<div class="location__map" data-coordinates-x="" data-coordinates-y="" data-location_slider="map" data-zoomlevel="" id="mapbox__map-0">
+<div class="location__info" data-coordinates-x="7.641871" data-coordinates-y="47.534827" data-location-target="Hochschule für Life Sciences FHNW" data-location_slider="markerData" data-zoomlevel="" id="location__marker-temp-0">
+<div class="location__upper">
+<h3>Hochschule für Life Sciences FHNW</h3>
+<div class="location__address">
+<span></span>
+<span>Fachhochschule Nordwestschweiz FHNW
+Hochschule für Life Sciences</span>
+<span>Hofackerstrasse 30</span>
+<span>4132 Muttenz</span>
+</div>
+<div class="location__contact">
+<dl>
+<dt>E-Mail</dt>
+<dd><a href="geomailto:aW5mby5saWZlc2NpZW5jZXNAZmhudy5jaA==" rel="nofollow"><span class="geomailaddress">aW5mby5saWZlc2NpZW5jZXNAZmhudy5jaA==</span></a></dd>
+</dl>
+</div>
+<a class="button small_button" href="/de/die-fhnw/hochschulen/muttenz">Mehr Infos zum Standort</a>
+</div>
+<div class="location__inferior">
+<a href="https://www.google.ch/maps/dir//,Hofackerstrasse+30,4132+Muttenz/@47.534827,7.641871,18z" target="_blank"><span>Route berechnen</span></a>
+</div>
+</div>
+</div>
+</div>
+</div><div class="content__element content__element___bleed content__element___top-bordered">
+<div class="widg_so_me_share" data-init="so_me_share">
+<div class="widg_so_me_share__text">Diese Seite teilen: </div>
+<div class="widg_so_me_share__buttons" role="list">
+<a class="facebook not-default" data-share-text="FHNW - Umweltwissenschaften und Technologie" data-so_me_share="fb" role="listitem" target="_blank"><span class="some-icon"></span><span class="some-text">Facebook</span></a>
+<a class="linkedin not-default" data-share-text="FHNW - Umweltwissenschaften und Technologie" data-so_me_share="in" role="listitem" target="_blank"><span class="some-icon"></span><span class="some-text">LinkedIn</span></a>
+<a class="twitter not-default" data-share-text="FHNW - Umweltwissenschaften und Technologie" data-so_me_share="tweet" role="listitem" target="_blank"><span class="some-icon"></span><span class="some-text">Twitter</span></a>
+<a class="mailto not-default" data-share-text="FHNW - Umweltwissenschaften und Technologie" data-so_me_share="mailto" role="listitem"><span class="some-icon"></span><span class="some-text">E-Mail</span></a>
+<a class="print_me not-default" data-share-text="" data-so_me_share="print" role="listitem"><span class="some-icon"></span><span class="some-text">Drucken</span></a>
+</div>
+</div>
+</div></div>
+<footer class="widg_footer">
+<div class="widg_inner-footer">
+<div class="widg_footernavigation" data-init="footernavigation">
+<div class="widg_footernavigation__column" data-footernavigation="column">
+<span data-footernavigation="columnTitle">Angebot</span>
+<ul>
+<li>
+<a href="https://www.fhnw.ch/de/studium">Studium</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/weiterbildung">Weiterbildung</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/forschung-und-dienstleistungen">Forschung &amp; Dienstleistungen</a>
+</li>
+</ul>
+</div>
+<div class="widg_footernavigation__column" data-footernavigation="column">
+<span data-footernavigation="columnTitle">Über die FHNW</span>
+<ul>
+<li>
+<a href="https://www.fhnw.ch/de/die-fhnw/hochschulen">Hochschulen</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/die-fhnw/organisation">Organisation</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/die-fhnw/organisation/direktionspraesidium">Leitung</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/die-fhnw/facts-und-figures">Facts &amp; Figures</a>
+</li>
+</ul>
+</div>
+<div class="widg_footernavigation__column" data-footernavigation="column">
+<span data-footernavigation="columnTitle">Hinweise</span>
+<ul>
+<li>
+<a href="https://www.fhnw.ch/de/impressum/datenschutz">Datenschutz</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/impressum/accessibility">Accessibility</a>
+</li>
+<li>
+<a href="https://www.fhnw.ch/de/impressum">Impressum</a>
+</li>
+</ul>
+</div>
+<div class="widg_footernavigation__column" data-footernavigation="column">
+<span data-footernavigation="columnTitle">Support &amp; Intranet</span>
+<ul>
+<li>
+<a href="https://www.fhnw.ch/de/de/die-fhnw/it-support">IT Support</a>
+</li>
+<li>
+<a href="https://inside.fhnw.ch/" target="_blank">Login Inside-FHNW</a>
+</li>
+</ul>
+</div>
+<div class="widg_footernavigation__column widg_footer__logos" data-footernavigation="column">
+<span>Member of:</span>
+<a class="fhnw" href="https://www.swissuniversities.ch/" target="_blank" title="swissuniversities">swissuniversities</a>
+<a class="eua" href="https://eua.eu" target="_blank" title="European University Association">European University Association</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div aria-hidden="true" class="widg_toplink" data-init="toplink">
+</div>
+</div><!-- START Bootstrap-Cookie-Alert --><div aria-hidden="false" aria-label="Datenschutz und Cookies" class="cookiealert" role="alert">
+<p></p>
+<button aria-label="Schliessen" class="button__secondary acceptcookies" type="button">
+			Ok
+	</button>
+</div><!-- END Bootstrap-Cookie-Alert --><script src="/Plone/++theme++web16theme/assets/js/main-b49575d151.min.js"></script><div id="extrascripts"> </div><div id="fhnwanalytics">
+<script>
+    $(function() {
+
+    	try {
+
+            jQuery(".widg_sidebar_events a:not([class*='disabled'])").on("click", function(event) {
+                dataLayer.push({
+                    'event': 'GTM-ConversionEvent',
+                    'anlass': 'infoanlass',
+                    'hochschule': 'fl,fl320',
+                    'schritt': 'start'
+                });
+
+            });
+
+    		jQuery(".widg_sidebar_application a:not([href$='#targetOnlineApplication'])").on("click", function(event) {
+                var url = $(this).attr('href');
+                var anmeldeart = '';
+                if (typeof url !== "undefined" && url.endsWith('.pdf')) {
+                    anmeldeart = 'pdf';
+                    schritt = 'dankesseite';
+                } else {
+                    anmeldeart = 'form';
+                    schritt = 'start';
+                }
+                dataLayer.push({
+                    'event': 'GTM-ConversionEvent',
+                    'anlass': 'ausbildung',
+                    'anmeldeart': anmeldeart,
+                    'hochschule': 'fl,fl320',
+                    'stufe': '␟ausbildungen,␟ausbildungen␟bachelor',
+                    'produkt': 'Umweltwissenschaften und Technologie',
+                    'schritt': schritt
+                });
+            });
+
+    		jQuery(".widg_application_accordeon a:not([class*='disabled'])").on("click", function(event) {
+                dataLayer.push({
+                    'event': 'GTM-ConversionEvent',
+                    'anlass': 'ausbildung',
+                    'anmeldeart': 'form',  // XXX
+                    'hochschule': 'fl,fl320',
+                    'stufe': '␟ausbildungen,␟ausbildungen␟bachelor',
+                    'produkt': 'Umweltwissenschaften und Technologie',
+                    'schritt': 'start'
+                });
+
+            });
+
+        }
+        catch(err) {
+            console.log(err.message);
+        }
+
+    });
+
+</script>
+</div><script src="/Plone/++theme++web16theme/assets/js/bundle-54c267710f.js"></script><form id="googleAnalyticsData" style="display:none;">
+<input id="analyticsAnlass" type="hidden" value=""/>
+<input id="analyticsHochschule" type="hidden" value=""/>
+<input id="analyticsStufe" type="hidden" value=""/>
+<input id="analyticsType" type="hidden" value="EduProduct"/>
+<input id="analyticsProduktField" type="hidden" value=""/>
+<input id="analyticsProdukt" type="hidden" value=""/>
+</form></body>
+</html>

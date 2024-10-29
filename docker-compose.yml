@@ -2,6 +2,7 @@ name: poc-scraper
 
 services:
   api:
+    image: poc-scraper:latest
     build: .
     ports:
       - 8000:8000
@@ -16,7 +17,7 @@ services:
         condition: service_healthy
 
   celery_worker:
-    build: .
+    image: poc-scraper:latest
     command: celery -A app.celery worker --loglevel=info
     env_file:
       - .env
@@ -27,22 +28,19 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
-    healthcheck:
-      test: celery -A app.celery inspect ping
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   celery_flower:
-    build: .
+    image: poc-scraper:latest
     command: celery -A app.celery flower
     ports:
       - 5555:5555
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       celery_worker:
-        condition: service_healthy
+        condition: service_started
 
   mongodb:
     image: mongo:latest
