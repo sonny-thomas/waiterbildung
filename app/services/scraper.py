@@ -15,8 +15,8 @@ from bson import ObjectId
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from app.core.database import Database
 from app.core.config import settings
+from app.core.database import Database
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -125,12 +125,32 @@ class DataExtractor:
         self.schema = schema
         self.extraction_rules = self._create_extraction_rules()
 
+    def _validate_selector(self, selector: str) -> bool:
+        """Validate if a CSS selector is syntactically correct"""
+        if not selector or not isinstance(selector, str):
+            return False
+        try:
+            # Use BeautifulSoup to validate the selector
+            # If invalid, it will raise ValueError
+            soup = BeautifulSoup("<html></html>", "lxml")
+            soup.select(selector)
+            return True
+        except ValueError:
+            return False
+
     def _create_extraction_rules(self) -> List[ExtractionRule]:
-        """Convert schema into extraction rules"""
+        """Convert schema into extraction rules with validation"""
         rules = []
         for field in self.schema["fields"]:
+            selector = field["primary_selector"]
+            if not self._validate_selector(selector):
+                logger.warning(
+                    f"Invalid selector '{selector}' for field '{field['name']}'. Skipping."
+                )
+                continue
+
             rule = ExtractionRule(
-                selector=field["primary_selector"],
+                selector=selector,
                 selector_type="css",
                 field_name=field["name"],
                 data_type=field["data_type"],
@@ -146,15 +166,22 @@ class DataExtractor:
     ) -> Optional[List[ExtractionRule]]:
         if not nested_fields:
             return None
-        return [
-            ExtractionRule(
-                selector=field["primary_selector"],
-                selector_type="css",
-                field_name=field["name"],
-                data_type=field["data_type"],
-            )
-            for field in nested_fields
-        ]
+        validated_fields = []
+        for field in nested_fields:
+            if self._validate_selector(field["primary_selector"]):
+                validated_fields.append(
+                    ExtractionRule(
+                        selector=field["primary_selector"],
+                        selector_type="css",
+                        field_name=field["name"],
+                        data_type=field["data_type"],
+                    )
+                )
+            else:
+                logger.warning(
+                    f"Invalid nested selector '{field['primary_selector']}' for field '{field['name']}'. Skipping."
+                )
+        return validated_fields if validated_fields else None
 
     def extract_data(self, html_content: str) -> Dict[str, Any]:
         """Extract data using the schema"""
