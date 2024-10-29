@@ -130,8 +130,6 @@ class DataExtractor:
         if not selector or not isinstance(selector, str):
             return False
         try:
-            # Use BeautifulSoup to validate the selector
-            # If invalid, it will raise ValueError
             soup = BeautifulSoup("<html></html>", "lxml")
             soup.select(selector)
             return True
@@ -273,20 +271,17 @@ async def save_course(course_data: Dict[str, Any], provider_id: ObjectId) -> Non
     course_data["created_at"] = datetime.now(timezone.utc)
     course_data["updated_at"] = datetime.now(timezone.utc)
 
-    # Check if course already exists (using URL as unique identifier)
     existing_course = await Database.get_collection("courses").find_one(
         {"url": course_data["url"], "provider_id": provider_id}
     )
 
     if existing_course:
-        # Update existing course
         await Database.get_collection("courses").update_one(
             {"_id": existing_course["_id"]},
             {"$set": {**course_data, "updated_at": datetime.now(timezone.utc)}},
         )
         logger.info(f"Updated existing course: {course_data['url']}")
     else:
-        # Insert new course
         await Database.get_collection("courses").insert_one(course_data)
         logger.info(f"Inserted new course: {course_data['url']}")
 
@@ -314,7 +309,6 @@ async def scrap_course_data(session, url: str, context: ScrapingContext) -> None
             course_data["content"] = html
             await save_course(course_data, context.provider_id)
 
-        # Parse links for further crawling
         soup = BeautifulSoup(html, "lxml")
         parsed_base_url = urlparse(context.base_url)
 
@@ -324,7 +318,6 @@ async def scrap_course_data(session, url: str, context: ScrapingContext) -> None
                 full_url = urljoin(url, href.split("#")[0])
                 parsed_url = urlparse(full_url)
 
-                # Check if URL belongs to same domain and hasn't been processed
                 if (
                     parsed_url.netloc == parsed_base_url.netloc
                     and full_url not in context.checked_urls
@@ -392,7 +385,6 @@ async def scrape_university(job_id: str) -> Dict[str, Any]:
     """Main entry point for scraping job"""
     await Database.connect_db()
 
-    # Get and update job status
     job = await Database.get_collection("scraping_jobs").find_one_and_update(
         {"_id": ObjectId(job_id)},
         {"$set": {"status": "in_progress"}},
@@ -401,7 +393,6 @@ async def scrape_university(job_id: str) -> Dict[str, Any]:
 
     await process_url(job)
 
-    # Update job completion status
     await Database.get_collection("scraping_jobs").update_one(
         {"_id": ObjectId(job_id)},
         {
