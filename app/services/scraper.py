@@ -248,7 +248,7 @@ async def fetch(session, url):
         return None
 
 
-async def ensure_provider_exists(base_url: str, name: str) -> ObjectId:
+async def ensure_provider_exists(base_url: str) -> ObjectId:
     """Ensure educational provider exists in the database and return its ID"""
     provider = await Database.get_collection("educational_providers").find_one(
         {"base_url": base_url}
@@ -257,7 +257,6 @@ async def ensure_provider_exists(base_url: str, name: str) -> ObjectId:
     if not provider:
         result = await Database.get_collection("educational_providers").insert_one(
             {
-                "name": name,
                 "base_url": base_url,
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc),
@@ -337,12 +336,20 @@ async def scrap_course_data(session, url: str, context: ScrapingContext) -> None
 
 async def worker(session, context: ScrapingContext) -> None:
     """Process URLs from the queue"""
-    while context.queue:
+    while True:
         try:
+            if not context.queue:
+                await asyncio.sleep(0.1)
+                if not context.queue:
+                    break
+                continue
+            
             url = context.queue.popleft()
             await scrap_course_data(session, url, context)
+        except IndexError:
+            continue
         except Exception as e:
-            logger.error(f"Error processing URL {url}: {e}")
+            logger.error(f"Error processing URL: {e}")
 
 
 async def process_url(job: Dict[str, Any]) -> None:
@@ -350,10 +357,8 @@ async def process_url(job: Dict[str, Any]) -> None:
     base_url = job["base_url"]
     course_url = job["course_url"]
     target_fields = job["target_fields"]
-    provider_name = job.get("provider_name", urlparse(base_url).netloc)
 
-    # Ensure provider exists and get its ID
-    provider_id = await ensure_provider_exists(base_url, provider_name)
+    provider_id = await ensure_provider_exists(base_url)
 
     async with aiohttp.ClientSession(timeout=ClientTimeout(total=30)) as session:
         initial_html, course_url = await fetch(session, course_url)
@@ -364,7 +369,6 @@ async def process_url(job: Dict[str, Any]) -> None:
         schema = await generate_schema(initial_html, target_fields)
         data_extractor = DataExtractor(schema)
 
-        # Create scraping context
         context = ScrapingContext(
             base_url=base_url,
             provider_id=provider_id,
@@ -373,7 +377,7 @@ async def process_url(job: Dict[str, Any]) -> None:
             data_extractor=data_extractor,
         )
 
-        num_workers = 5  # Reduced from 1000 to avoid overwhelming the server
+        num_workers = 1000
         workers = [
             asyncio.create_task(worker(session, context)) for _ in range(num_workers)
         ]
@@ -382,16 +386,6 @@ async def process_url(job: Dict[str, Any]) -> None:
     logger.info(
         f"Completed processing {course_url}. Total URLs processed: {len(context.checked_urls)}"
     )
-
-
-async def worker(session, context: ScrapingContext) -> None:
-    """Process URLs from the queue"""
-    while context.queue:
-        try:
-            url = context.queue.popleft()
-            await scrap_course_data(session, url, context)
-        except Exception as e:
-            logger.error(f"Error processing URL {url}: {e}")
 
 
 async def scrape_university(job_id: str) -> Dict[str, Any]:
