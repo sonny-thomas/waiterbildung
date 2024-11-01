@@ -22,7 +22,7 @@ async def save_course(course_data: Dict[str, Any], provider_id: ObjectId) -> Non
     course_data["updated_at"] = datetime.now(timezone.utc)
 
     existing_course = await Database.get_collection("courses").find_one(
-        {"url": course_data["url"], "provider_id": provider_id}
+        {"course_url": course_data["course_url"], "provider_id": provider_id}
     )
 
     if existing_course:
@@ -30,10 +30,10 @@ async def save_course(course_data: Dict[str, Any], provider_id: ObjectId) -> Non
             {"_id": existing_course["_id"]},
             {"$set": {**course_data, "updated_at": datetime.now(timezone.utc)}},
         )
-        logger.info(f"Updated existing course: {course_data['url']}")
+        logger.info(f"Updated existing course: {course_data['course_url']}")
     else:
         await Database.get_collection("courses").insert_one(course_data)
-        logger.info(f"Inserted new course: {course_data['url']}")
+        logger.info(f"Inserted new course: {course_data['course_url']}")
 
 
 @dataclass
@@ -63,7 +63,7 @@ async def scrap_course_data(
         course_data = context.data_extractor.extract_data(html_content)
         if course_data:
             course_data["course_url"] = course_url
-            course_data["content"] = html_content
+            course_data["content"] = BeautifulSoup(html_content, "lxml").get_text()
             await save_course(course_data, context.provider_id)
 
         soup = BeautifulSoup(html_content, "lxml")
