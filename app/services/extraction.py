@@ -153,7 +153,7 @@ class DataExtractor:
         soup = BeautifulSoup(html_content, "lxml")
         data, total_extracted_fields = self._extract_fields(soup)
 
-        if total_extracted_fields >= (self.total_fields * 0.75):
+        if total_extracted_fields >= (self.total_fields * 0.65):
             return data
         return None
 
