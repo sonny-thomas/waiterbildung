@@ -31,7 +31,10 @@ async def scrape_course_page(request: Schema) -> dict:
     """Endpoint to scrape a single course page using a schema"""
     try:
         html_content, _ = await fetch_html(request.course_url)
-        return await extract_data_from_html(html_content, request.target_fields)
+        data = await extract_data_from_html(html_content, request.target_fields)
+        if data:
+            return data
+        raise HTTPException(status_code=400, detail="Failed to extract data")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
