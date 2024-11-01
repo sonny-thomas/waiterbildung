@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Optional
 
@@ -7,6 +8,9 @@ from pydantic_settings import BaseSettings
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class Settings(BaseSettings):
     # OpenAI Settings
@@ -15,12 +19,8 @@ class Settings(BaseSettings):
     # Database Settings
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "poc-scraper")
-    MONGO_INITDB_ROOT_USERNAME: Optional[str] = os.getenv(
-        "MONGO_INITDB_ROOT_USERNAME"
-    )
-    MONGO_INITDB_ROOT_PASSWORD: Optional[str] = os.getenv(
-        "MONGO_INITDB_ROOT_PASSWORD"
-    )
+    MONGO_INITDB_ROOT_USERNAME: Optional[str] = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+    MONGO_INITDB_ROOT_PASSWORD: Optional[str] = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 
     # Redis Settings
     REDIS_USER: Optional[str] = os.getenv("REDIS_USER")
@@ -28,9 +28,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379")
 
     # Celery Settings
-    CELERY_BROKER_URL: str = os.getenv(
-        "CELERY_BROKER_URL", "redis://redis:6379/0"
-    )
+    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
     CELERY_RESULT_BACKEND: str = os.getenv(
         "CELERY_RESULT_BACKEND", "redis://redis:6379/0"
     )

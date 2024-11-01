@@ -1,34 +1,30 @@
 # OpenAI Configuration
-OPENAI_API_KEY=
+OPENAI_API_KEY=""
 
 # Database Configuration
-DATABASE_NAME=poc-scaper
+DATABASE_NAME=poc-scraper
 MONGO_INITDB_ROOT_USERNAME=poc-scraper
 MONGO_INITDB_ROOT_PASSWORD=poc-scraper
-MONGODB_URL=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/${DATABASE_NAME}?authSource=admin
+MONGODB_URL="mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/${DATABASE_NAME}"
 
 # Redis Configuration
-REDIS_USER=poc-scaper
-REDIS_PASSWORD=poc-scaper
+REDIS_USER=poc-scraper
+REDIS_PASSWORD=poc-scraper
 REDIS_URL=redis://${REDIS_USER}:${REDIS_PASSWORD}@redis:6379
 
 # Celery Configuration
 CELERY_BROKER_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-# Monitoring
-FLOWER_PORT=5555
-FLOWER_UNAUTHENTICATED_API=true
-
 # Application Configuration
 APP_NAME=poc-scraper
 APP_VERSION=1.0.0
 ENVIRONMENT=development
-DEBUG=1
+DEBUG=0
 LOG_LEVEL=DEBUG
 
 # API Configuration
 API_HOST=0.0.0.0
 API_PORT=8000
 API_PREFIX=/api/v1
-ALLOWED_ORIGINS=http://localhost:8000
+ALLOWED_ORIGINS=http://localhost:8000,htttps://poc-scraper.trustle.
