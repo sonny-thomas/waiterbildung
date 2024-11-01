@@ -39,7 +39,9 @@ async def generate_schema(html_content: str, target_fields: List[str]) -> dict:
             }}
             Note: Nested fields are indicated by dot notation in the target fields. For example, 'contact_info.email' should be nested under 'contact_info'.
             Note: If the data is stored in a simple list without good selectors, use a unique identifier for each item instead of the list index, as the list might rotate or items might be missing or added on another page. Never use list index.
-            Important: Ensure that all parent selectors are valid and not empty. Each parent selector should have corresponding child selectors if applicable.""",
+            Note: You should never use list index like nth-of-type(1) or last-of-type as a selector as it is forbidden. Always use a unique identifier for each item. you can use text content, attributes, or a combination of both.
+            Important: Ensure that all parent selectors are valid and not empty. Each parent selector should have corresponding child selectors if applicable.
+            """,
             model="gpt-4-turbo-preview",
             tools=[{"type": "file_search"}],
             tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
