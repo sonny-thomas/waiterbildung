@@ -140,7 +140,7 @@ async def process_url(university: Dict[str, Any]) -> None:
             queue=deque([university["base_url"]]),
             data_extractor=data_extractor,
             lock=asyncio.Lock(),
-            max_urls=1000,
+            max_urls=100000,
         )
 
         num_workers = 32
@@ -151,7 +151,7 @@ async def process_url(university: Dict[str, Any]) -> None:
         ]
 
         try:
-            await asyncio.wait_for(asyncio.gather(*workers), timeout=3600)
+            await asyncio.wait_for(asyncio.gather(*workers))
         except asyncio.TimeoutError:
             logger.warning("Scraping timeout reached after 1 hour")
             shutdown_event.set()
