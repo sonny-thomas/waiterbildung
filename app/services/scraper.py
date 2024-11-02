@@ -143,7 +143,7 @@ async def process_url(university: Dict[str, Any]) -> None:
             max_urls=1000,
         )
 
-        num_workers = 16
+        num_workers = 32
         shutdown_event = asyncio.Event()
         workers = [
             asyncio.create_task(worker(session, context, worker_id, shutdown_event))
