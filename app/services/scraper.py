@@ -114,7 +114,7 @@ async def scrap_course_data(
                     and len(context.checked_urls) < context.max_urls
                 ):
                     context.checked_urls.add(full_url)
-                    if context.is_valid_course_url(url):
+                    if context.is_valid_course_url(full_url):
                         context.queue.append(full_url)
             logger.info(
                 f"Queue size: {len(context.queue)}, Checked URLs size: {len(context.checked_urls)}, Max URLs: {context.max_urls}"
