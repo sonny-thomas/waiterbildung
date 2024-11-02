@@ -12,17 +12,17 @@ from bson import ObjectId
 from app.core.config import logger
 from app.core.database import Database
 from app.services.extraction import DataExtractor
-from app.services.utils import fetch_html
+from app.services.utils import clean_html_content, fetch_html
 
 
-async def save_course(course_data: Dict[str, Any], provider_id: ObjectId) -> None:
+async def save_course(course_data: Dict[str, Any], university: ObjectId) -> None:
     """Save course data with reference to provider"""
-    course_data["provider_id"] = provider_id
+    course_data["university"] = university
     course_data["created_at"] = datetime.now(timezone.utc)
     course_data["updated_at"] = datetime.now(timezone.utc)
 
     existing_course = await Database.get_collection("courses").find_one(
-        {"course_url": course_data["course_url"], "provider_id": provider_id}
+        {"course_url": course_data["course_url"], "university": university}
     )
 
     if existing_course:
@@ -41,11 +41,36 @@ class ScrapingContext:
     """Context for scraping operations with thread-safe collections"""
 
     base_url: str
-    provider_id: ObjectId
+    university: ObjectId
     checked_urls: Set[str]
     queue: deque
     data_extractor: DataExtractor
     lock: asyncio.Lock
+    max_urls: int = 100000
+
+    def is_valid_course_url(self, url: str) -> bool:
+        """Check if URL matches course patterns and isn't a file"""
+        url_lower = url.lower()
+
+        skip_extensions = [
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".zip",
+            ".rar",
+            ".csv",
+            ".xlsx",
+            ".ppt",
+            ".pptx",
+        ]
+        if any(url_lower.endswith(ext) for ext in skip_extensions):
+            return False
+
+        return url_lower
 
 
 async def scrap_course_data(
@@ -56,19 +81,21 @@ async def scrap_course_data(
         html_content, course_url = await fetch_html(url, session)
         if not html_content:
             return
+
         async with context.lock:
             context.checked_urls.add(url)
-        logger.info(f"Successfully fetched {url}")
 
-        course_data = context.data_extractor.extract_data(html_content)
-        if course_data:
-            course_data["course_url"] = course_url
-            course_data["content"] = BeautifulSoup(html_content, "lxml").get_text()
-            await save_course(course_data, context.provider_id)
+        # Only try to extract course data if URL matches course patterns
+        if context.is_valid_course_url(url):
+            course_data = context.data_extractor.extract_data(html_content)
+            if course_data:
+                course_data["course_url"] = course_url
+                course_data["content"] = clean_html_content(html_content)
+                await save_course(course_data, context.university)
 
         soup = BeautifulSoup(html_content, "lxml")
         parsed_base_url = urlparse(context.base_url)
-        new_urls = []
+        new_urls = set()
 
         for tag in soup.find_all("a"):
             href = tag.get("href")
@@ -76,17 +103,65 @@ async def scrap_course_data(
                 full_url = urljoin(url, href.split("#")[0])
                 parsed_url = urlparse(full_url)
 
-                if parsed_url.netloc == parsed_base_url.netloc:
-                    new_urls.append(full_url)
+                if (
+                    parsed_url.netloc == parsed_base_url.netloc
+                    and full_url not in context.checked_urls
+                ):
+                    new_urls.add(full_url)
 
         async with context.lock:
             for full_url in new_urls:
-                if full_url not in context.checked_urls:
+                if (
+                    full_url not in context.checked_urls
+                    and len(context.checked_urls) < context.max_urls
+                ):
                     context.checked_urls.add(full_url)
                     context.queue.append(full_url)
+            logger.info(
+                f"Queue size: {len(context.queue)}, Checked URLs size: {len(context.checked_urls)}, Max URLs: {context.max_urls}"
+            )
 
     except Exception as e:
         logger.error(f"Error processing URL {url}: {str(e)}")
+
+
+async def process_url(university: Dict[str, Any]) -> None:
+    """Process URLs with improved worker management"""
+    timeout = aiohttp.ClientTimeout(total=30)
+    connector = aiohttp.TCPConnector(limit=50)
+
+    async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+        data_extractor = DataExtractor(university["target_fields"])
+
+        context = ScrapingContext(
+            base_url=university["base_url"],
+            university=university["_id"],
+            checked_urls=set([university["base_url"]]),
+            queue=deque([university["base_url"]]),
+            data_extractor=data_extractor,
+            lock=asyncio.Lock(),
+            max_urls=1000,
+        )
+
+        num_workers = 16
+        shutdown_event = asyncio.Event()
+        workers = [
+            asyncio.create_task(worker(session, context, worker_id, shutdown_event))
+            for worker_id in range(num_workers)
+        ]
+
+        try:
+            await asyncio.wait_for(asyncio.gather(*workers), timeout=3600)
+        except asyncio.TimeoutError:
+            logger.warning("Scraping timeout reached after 1 hour")
+            shutdown_event.set()
+            await asyncio.gather(*workers, return_exceptions=True)
+
+        logger.info(
+            f"Completed processing {university['base_url']}. "
+            f"Total URLs processed: {len(context.checked_urls)}, "
+            f"Total courses found: {await Database.get_collection('courses').count_documents({'university': university['_id']})}"
+        )
 
 
 async def worker(
@@ -105,9 +180,6 @@ async def worker(
                     url = context.queue.popleft()
 
             if url:
-                logger.info(f"Worker {worker_id} processing: {url}")
-                logger.info(f"Worker {worker_id} queue size: {len(context.queue)}")
-                logger.info(f"Worker {worker_id} total URLs: {len(context.checked_urls)}")
                 await scrap_course_data(session, url, context)
             else:
                 await asyncio.sleep(3)
@@ -124,37 +196,6 @@ async def worker(
             logger.error(f"Worker {worker_id} error: {str(e)}")
 
 
-async def process_url(university: Dict[str, Any]) -> None:
-    """Process URLs with improved worker management"""
-    timeout = aiohttp.ClientTimeout(total=10)
-    connector = aiohttp.TCPConnector(limit=100)
-
-    async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
-        data_extractor = DataExtractor(university["target_fields"])
-
-        context = ScrapingContext(
-            base_url=university["base_url"],
-            provider_id=university["_id"],
-            checked_urls=set([university["base_url"]]),
-            queue=deque([university["base_url"]]),
-            data_extractor=data_extractor,
-            lock=asyncio.Lock(),
-        )
-
-        num_workers = 16
-        workers = [
-            asyncio.create_task(worker(session, context, worker_id, asyncio.Event()))
-            for worker_id in range(num_workers)
-        ]
-
-        await asyncio.gather(*workers)
-
-        logger.info(
-            f"Completed processing {university['base_url']}. "
-            f"Total URLs processed: {len(context.checked_urls)}"
-        )
-
-
 async def scrape_university(university_id: str) -> Dict[str, Any]:
     """Main entry point for scraping job"""
     await Database.connect_db()
@@ -167,7 +208,7 @@ async def scrape_university(university_id: str) -> Dict[str, Any]:
 
     await process_url(university)
 
-    return await Database.get_collection("scraping_jobs").find_one_and_update(
+    await Database.get_collection("universities").update_one(
         {"_id": ObjectId(university_id)},
         {
             "$set": {
@@ -176,5 +217,6 @@ async def scrape_university(university_id: str) -> Dict[str, Any]:
                 "message": "Scraping job completed successfully",
             }
         },
-        return_document=True,
     )
+
+    return {"message": "Scraping job completed successfully"}
