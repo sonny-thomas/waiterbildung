@@ -85,13 +85,11 @@ async def scrap_course_data(
         async with context.lock:
             context.checked_urls.add(url)
 
-        # Only try to extract course data if URL matches course patterns
-        if context.is_valid_course_url(url):
-            course_data = context.data_extractor.extract_data(html_content)
-            if course_data:
-                course_data["course_url"] = course_url
-                course_data["content"] = clean_html_content(html_content)
-                await save_course(course_data, context.university)
+        course_data = context.data_extractor.extract_data(html_content)
+        if course_data:
+            course_data["course_url"] = course_url
+            course_data["content"] = clean_html_content(html_content)
+            await save_course(course_data, context.university)
 
         soup = BeautifulSoup(html_content, "lxml")
         parsed_base_url = urlparse(context.base_url)
@@ -116,7 +114,8 @@ async def scrap_course_data(
                     and len(context.checked_urls) < context.max_urls
                 ):
                     context.checked_urls.add(full_url)
-                    context.queue.append(full_url)
+                    if context.is_valid_course_url(url):
+                        context.queue.append(full_url)
             logger.info(
                 f"Queue size: {len(context.queue)}, Checked URLs size: {len(context.checked_urls)}, Max URLs: {context.max_urls}"
             )
@@ -151,7 +150,7 @@ async def process_url(university: Dict[str, Any]) -> None:
         ]
 
         try:
-            await asyncio.wait_for(asyncio.gather(*workers))
+            await asyncio.wait_for(asyncio.gather(*workers), timeout=18000)
         except asyncio.TimeoutError:
             shutdown_event.set()
             await asyncio.gather(*workers, return_exceptions=True)
