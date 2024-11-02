@@ -30,10 +30,10 @@ async def save_course(course_data: Dict[str, Any], university: ObjectId) -> None
             {"_id": existing_course["_id"]},
             {"$set": {**course_data, "updated_at": datetime.now(timezone.utc)}},
         )
-        logger.info(f"Updated existing course: {course_data['course_url']}")
+        logger.debug(f"Updated existing course: {course_data['course_url']}")
     else:
         await Database.get_collection("courses").insert_one(course_data)
-        logger.info(f"Inserted new course: {course_data['course_url']}")
+        logger.debug(f"Inserted new course: {course_data['course_url']}")
 
 
 @dataclass
@@ -122,7 +122,7 @@ async def scrap_course_data(
             )
 
     except Exception as e:
-        logger.error(f"Error processing URL {url}: {str(e)}")
+        logger.debug(f"Error processing URL {url}: {str(e)}")
 
 
 async def process_url(university: Dict[str, Any]) -> None:
@@ -153,7 +153,6 @@ async def process_url(university: Dict[str, Any]) -> None:
         try:
             await asyncio.wait_for(asyncio.gather(*workers))
         except asyncio.TimeoutError:
-            logger.warning("Scraping timeout reached after 1 hour")
             shutdown_event.set()
             await asyncio.gather(*workers, return_exceptions=True)
 

@@ -31,14 +31,14 @@ class DataExtractor:
 
         for field in fields:
             if not self._validate_selector(field["primary_selector"]):
-                logger.warning(
+                logger.debug(
                     f"Invalid primary selector '{field['primary_selector']}' for field '{field['name']}'. Checking fallbacks."
                 )
                 valid_selector = self._get_valid_fallback(
                     field.get("fallback_selectors", [])
                 )
                 if not valid_selector:
-                    logger.warning(
+                    logger.debug(
                         f"No valid selectors found for field '{field['name']}'. Skipping."
                     )
                     continue
@@ -88,7 +88,7 @@ class DataExtractor:
                 return value.lower() in ["true", "yes", "1"]
             return value
         except (ValueError, TypeError):
-            logger.warning(f"Failed to convert value '{value}' to type {data_type}")
+            logger.debug(f"Failed to convert value '{value}' to type {data_type}")
             return None
 
     def _extract_fields(
@@ -110,7 +110,7 @@ class DataExtractor:
 
             if not target:
                 if rule.is_mandatory:
-                    logger.warning(
+                    logger.debug(
                         f"Failed to extract mandatory field '{rule.name}'. No valid selectors."
                     )
                     return None
@@ -126,7 +126,7 @@ class DataExtractor:
                 value = target.get_text(strip=True)
                 converted_value = self._convert_value(value, rule.data_type)
                 if converted_value is None and rule.is_mandatory:
-                    logger.warning(
+                    logger.debug(
                         f"Failed to convert mandatory field '{rule.name}' value"
                     )
                     return None
