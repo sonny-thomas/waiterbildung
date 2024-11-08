@@ -4,7 +4,8 @@ from celery import Celery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.scraper import router
+from app.api.chat import router as chat_router
+from app.api.scraper import router as scraper_router
 from app.core.config import settings
 from app.core.database import Database
 
@@ -41,7 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router, prefix=settings.API_PREFIX)
+app.include_router(scraper_router, prefix=settings.API_PREFIX)
+app.include_router(chat_router, prefix=settings.API_PREFIX)
 
 
 @app.get("/health")
