@@ -106,4 +106,4 @@ async def chat(chat: ChatData):
         await asyncio.sleep(1)
 
     messages = client.beta.threads.messages.list(thread_id=chat.thread_id)
-    return messages
+    return messages.data[0].content[0].text.value
