@@ -1,7 +1,5 @@
 import asyncio
-import csv
 import os
-from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
@@ -26,8 +24,7 @@ async def initialize_assistant():
             for course in courses:
                 txtfile.write("=== Course Information ===\n")
                 for key, value in course.items():
-                    if key != "_id" or key != "content":
-                        txtfile.write(f"{key}: {value}\n")
+                    txtfile.write(f"{key}: {value}\n")
                 txtfile.write("\n")
 
         with open(temp_filename, "rb") as f:
@@ -53,7 +50,7 @@ async def initialize_assistant():
                 - Highlight key features and benefits
                 - Make personalized recommendations based on user interests
                 - Provide accurate information from the course data
-                - Be transparent if certain information isn't available in the course data
+                - Be transparent if certain information isn't available
 
                 Remember: You are Weiterbildung's dedicated course advisor, committed to helping users find their ideal educational path through our platform.""",
             model="gpt-4-turbo-preview",
