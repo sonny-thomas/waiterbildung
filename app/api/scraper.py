@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import List
 from urllib.parse import urlparse
 
 import aiohttp
@@ -7,12 +6,13 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException
 
 from app.core.database import Database
+from app.models.institution import Institution
 from app.models.schema import EducationalProvider, Schema, SchemaRequest
 from app.services.extraction import extract_data_from_html
 from app.services.schema import generate_schema
 from app.services.utils import fetch_html
 
-router = APIRouter(tags=["scraper"])
+router = APIRouter(tags=["scraper"], prefix="/scraper")
 
 
 @router.post("/generate-schema")
@@ -55,18 +55,18 @@ async def start_scraping(request: Schema, rerun: bool = False) -> EducationalPro
                 )
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    universities = Database.get_collection("universities")
+    institutions = Database.get_collection("institutions")
 
-    university = await universities.find_one({"base_url": base_url})
+    institution = await institutions.find_one({"base_url": base_url})
 
-    if university and not rerun:
-        university["id"] = str(university["_id"])
-        university["message"] = (
-            f"Job already exists with status: {university['status']}"
+    if institution and not rerun:
+        institution["id"] = str(institution["_id"])
+        institution["message"] = (
+            f"Job already exists with status: {institution['status']}"
         )
-        return EducationalProvider(**university)
+        return Institution(**institution)
 
-    if university:
+    if institution and rerun:
         # cancel_task(university["task_id"])
         pass
 
@@ -79,16 +79,16 @@ async def start_scraping(request: Schema, rerun: bool = False) -> EducationalPro
             "created_at": datetime.now(timezone.utc),
             "completed_at": None,
             "courses_scraped": None,
-        }
+        },
     }
 
-    university = await universities.find_one_and_update(
+    university = await institutions.find_one_and_update(
         {"base_url": base_url}, data, upsert=True, return_document=True
     )
 
     task = scrape_university_courses.delay(str(university["_id"]))
 
-    await universities.update_one(
+    await institutions.update_one(
         {"_id": university["_id"]}, {"$set": {"task_id": task.id}}
     )
 

@@ -8,7 +8,8 @@ class Database:
 
     @staticmethod
     async def connect_db():
-        Database.client = AsyncIOMotorClient(settings.MONGODB_URL)
+        if not Database.is_connected():
+            Database.client = AsyncIOMotorClient(settings.MONGODB_URL)
 
     @staticmethod
     async def close_db():

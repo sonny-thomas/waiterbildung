@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="API for scraping university course information",
+    description="Backend application for Waiterbildung Chatbot",
     lifespan=lifespan,
     debug=settings.DEBUG,
     docs_url=f"{settings.API_PREFIX}/docs",

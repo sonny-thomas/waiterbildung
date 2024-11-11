@@ -4,6 +4,6 @@ class ChatMessage(BaseModel):
     isBot: bool
     text: str
 
-class ChatData(BaseModel):
+class ChatRequest(BaseModel):
     thread_id: str
     message: str
