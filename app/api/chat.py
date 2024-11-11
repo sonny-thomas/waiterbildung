@@ -44,7 +44,7 @@ async def chat(chat: ChatRequest) -> str:
         if run_status.status == "completed":
             break
         elif run_status.status in ["failed", "cancelled", "expired"]:
-            raise HTTPException(status_code=500, detail=run_status.message)
+            raise HTTPException(status_code=500, detail=str(run_status))
         await asyncio.sleep(1)
 
     messages = client.beta.threads.messages.list(thread_id=chat.thread_id)
