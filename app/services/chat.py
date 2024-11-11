@@ -63,7 +63,7 @@ async def initialize_assistant(client):
     - Focus solely on helping users find appropriate courses
 
     Remember: Every response should directly relate to the courses available in our collection. Maintain professionalism while being helpful and concise.""",
-            model="gpt-4-turbo-preview",
+            model="gpt-4o",
             tools=[{"type": "file_search"}],
             tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
         )
