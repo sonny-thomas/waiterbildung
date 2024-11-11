@@ -42,7 +42,7 @@ async def generate_schema(html_content: str, target_fields: List[str]) -> dict:
             Note: You should never use list index like nth-of-type(1) or last-of-type as a selector as it is forbidden. Always use a unique identifier for each item. you can use text content, attributes, or a combination of both.
             Important: Ensure that all parent selectors are valid and not empty. Each parent selector should have corresponding child selectors if applicable.
             """,
-            model="gpt-4o",
+            model="gpt-4-turbo-preview",
             tools=[{"type": "file_search"}],
             tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
         )
