@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
@@ -48,4 +49,10 @@ async def chat(chat: ChatRequest) -> str:
         await asyncio.sleep(1)
 
     messages = client.beta.threads.messages.list(thread_id=chat.thread_id)
-    return messages.data[0].content[0].text.value
+    response = messages.data[0].content[0].text.value
+    source_tag_pattern = r'【\d+†source】'
+    response = re.sub(source_tag_pattern, '', response)
+    
+    return response
+
+
