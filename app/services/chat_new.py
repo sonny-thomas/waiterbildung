@@ -95,7 +95,33 @@ async def create_vector_index():
 
 
 # Get Relevant courses from index
-# async def get_relevant_courses(query, index):
-#     await Database.connect_db()
-#     courses = await Database.get_collection("courses").find().to_list(None)
-#     return courses
+async def get_relevant_courses(query: str, limit: int = 5):
+    await Database.connect_db()
+    query_embedding = await generate_embedding_openai(query)
+    print("Querying Mongo Altas Index ...")
+    pipeline = [
+        {
+            "$vectorSearch": {
+            "index": settings.MONGO_SEARCH_INDEX,
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": 150,
+            "limit": limit
+            }
+        },
+        {
+            "$project": {
+                "_id" :  {"$toString": "$_id"}, 
+                "program_name": 1,
+                "course_url": 1,
+                "description": 1,
+                "key_data": 1,
+                "score": {
+                    "$meta": "vectorSearchScore"
+                }
+            }
+        }
+    ]
+    cursor = Database.get_collection("courses").aggregate(pipeline)
+    results = await cursor.to_list(length=limit)
+    return results
