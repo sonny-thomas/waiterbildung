@@ -47,7 +47,7 @@ jobs:
       - name: Start Python Application
         run: |
           # Start the Python application in the background
-          python app.py &
+          python main.py &
           APP_PID=$!
 
           # Wait a few seconds to ensure the app starts
