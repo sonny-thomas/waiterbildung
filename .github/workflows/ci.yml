@@ -17,8 +17,6 @@ jobs:
         --health-interval 5s
         --health-timeout 5s
         --health-retries 5
-      volumes:
-        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
 
       redis:
         image: redis:alpine
