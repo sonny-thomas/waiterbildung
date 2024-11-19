@@ -14,7 +14,7 @@ jobs:
           - 27017:27017
         options: >-
           --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh localhost/test --quiet"
-          --health-interval 5s
+          --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         volumes:
