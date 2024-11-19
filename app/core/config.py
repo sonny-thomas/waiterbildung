@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     # OpenAI Settings
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+    OPENAI_EMBEDDING_DIMENSION: int = int(os.getenv("EMBEDDING_DIMENSION", 1536))
 
     # Database Settings
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
