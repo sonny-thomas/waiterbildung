@@ -15,12 +15,14 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     # OpenAI Settings
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_CHAT_MODEL: str = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
     OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
     OPENAI_EMBEDDING_DIMENSION: int = int(os.getenv("EMBEDDING_DIMENSION", 1536))
 
     # Database Settings
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "poc-scraper")
+    MONGO_SEARCH_INDEX: str = os.getenv("MONGO_SEARCH_INDEX", "vector_index")
     MONGO_INITDB_ROOT_USERNAME: Optional[str] = os.getenv("MONGO_INITDB_ROOT_USERNAME")
     MONGO_INITDB_ROOT_PASSWORD: Optional[str] = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 
