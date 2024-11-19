@@ -6,7 +6,7 @@ from app.core.config import settings
 from app.core.database import Database
 from app.services.utils import generate_embedding_openai
 from pymongo.operations import SearchIndexModel
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # Remove embedding field from collection
 async def remove_embedding_field():
