@@ -51,7 +51,7 @@ jobs:
           sleep 5
 
           # Check if the application is responding on port 8000
-          if ! curl -sSf http://localhost:8000 > /dev/null; then
+          if ! curl -sSf http://localhost:8000/health > /dev/null; then
             echo "Python application failed to start"
             exit 1
           fi
