@@ -48,13 +48,10 @@ jobs:
         run: |
           # Start the Python application in the background
           python main.py &
-          APP_PID=$!
-
-          # Wait a few seconds to ensure the app starts
           sleep 5
 
-          # Check if the application is still running
-          if ! kill -0 $APP_PID; then
+          # Check if the application is responding on port 8000
+          if ! curl -sSf http://localhost:8000 > /dev/null; then
             echo "Python application failed to start"
             exit 1
           fi
@@ -66,13 +63,10 @@ jobs:
         run: |
           # Start Celery worker in the background
           celery -A app.celery worker --loglevel=info &
-          CELERY_PID=$!
-
-          # Wait a few seconds to ensure the worker starts
           sleep 5
 
-          # Check if the Celery worker is still running
-          if ! kill -0 $CELERY_PID; then
+          # Check if the Celery worker is running
+          if ! celery -A app.celery inspect ping; then
             echo "Celery worker failed to start"
             exit 1
           fi
