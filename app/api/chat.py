@@ -50,9 +50,7 @@ async def chat(chat: ChatRequest) -> str:
 
     messages = client.beta.threads.messages.list(thread_id=chat.thread_id)
     response = messages.data[0].content[0].text.value
-    source_tag_pattern = r'【\d+†source】'
-    response = re.sub(source_tag_pattern, '', response)
-    
+    source_tag_pattern = r"【\d+†source】"
+    response = re.sub(source_tag_pattern, "", response)
+
     return response
-
-
