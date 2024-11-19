@@ -19,16 +19,18 @@ async def generate_embedding_openai(
         'model': OPENAI_EMBEDDING_MODEL,
         'input': text
     }
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=data) as response:
-            if response.status != 200:
-                # Handle errors appropriately
-                error_message = await response.text()
-                raise Exception(f"Request failed with status {response.status}: {error_message}")
-            response_json = await response.json()
-            print(response_json)
-            embedding = response_json["data"][0]["embedding"]
-            return embedding
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=data) as response:
+                if response.status != 200:
+                    # Handle errors appropriately
+                    error_message = await response.text()
+                    raise Exception(f"Request failed with status {response.status}: {error_message}")
+                response_json = await response.json()
+                embedding = response_json["data"][0]["embedding"]
+                return embedding
+    except Exception as e:
+        return str(e)
 
 
 async def fetch_html(
