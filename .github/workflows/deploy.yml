@@ -2,46 +2,37 @@ name: Continuous Deployment
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Decode .env file
-      env:
-        ENV_FILE: ${{ secrets.ENV_FILE_BASE64 }}
-      run: |
-        echo "$ENV_FILE" | base64 --decode > .env
-    
-    - name: Deploy to Production Server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          # Navigate to project directory
-          cd /path/to/project
-          
-          # Pull latest code
-          git fetch origin main
-          git reset --hard origin/main
-          
-          # Decode .env file
-          echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 --decode > .env
-          
-          # Build Docker image
-          docker-compose -f docker-compose.prod.yml build
-          
-          # Stop existing containers
-          docker-compose -f docker-compose.prod.yml down
-          
-          # Start new containers
-          docker-compose -f docker-compose.prod.yml up -d
-          
-          # Optional: Cleanup old images
-          docker image prune -f
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd poc-scraper
+
+            # Pull latest code
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Build Docker image
+            docker-compose -f docker-compose.prod.yml build
+
+            # Stop existing containers
+            docker-compose -f docker-compose.prod.yml down
+
+            # Start new containers
+            docker-compose -f docker-compose.prod.yml up -d
+
+            # Optional: Cleanup old images
+            docker image prune -f
