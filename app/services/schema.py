@@ -92,4 +92,3 @@ async def generate_schema(html_content: str, target_fields: List[str]) -> dict:
             client.beta.assistants.delete(assistant.id)
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")
-

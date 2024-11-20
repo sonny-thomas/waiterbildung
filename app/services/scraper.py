@@ -102,16 +102,14 @@ async def scrap_course_data(
                 parsed_url = urlparse(full_url)
 
                 if (
-                    parsed_url.netloc == parsed_base_url.netloc
-                    and full_url not in context.checked_urls
+                    parsed_url.netloc == parsed_base_url.netloc and full_url not in context.checked_urls
                 ):
                     new_urls.add(full_url)
 
         async with context.lock:
             for full_url in new_urls:
                 if (
-                    full_url not in context.checked_urls
-                    and len(context.checked_urls) < context.max_urls
+                    full_url not in context.checked_urls and len(context.checked_urls) < context.max_urls
                 ):
                     context.checked_urls.add(full_url)
                     if context.is_valid_course_url(full_url):

@@ -80,5 +80,3 @@ async def chat(chat: ChatRequest):
     
     response = "Hello, World!"
     return response
-
-
