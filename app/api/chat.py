@@ -1,5 +1,4 @@
-import asyncio
-import re
+from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
@@ -47,6 +46,23 @@ async def create_index():
 async def search_from_index(query: str):
     response = await get_relevant_courses(query)
     return response
+
+@router.get("/chat/create_session")
+async def create_session():
+    """Endpoint to create a new chat session."""
+    return {"session_id": str(uuid4())}
+
+@router.get("/chat/refresh_session")
+async def refresh_session(session_id: str):
+    """Endpoint to refresh a chat session."""
+    client.refresh_session(session_id)
+    return {"session_id": session_id}
+
+@router.get("/chat/get_all_session_history")
+async def get_all_session_history():
+    """Endpoint to get chat session history."""
+    return client.get_all_session_history()
+
 
 @router.post("/chat")
 async def chat(chat: ChatRequest):
