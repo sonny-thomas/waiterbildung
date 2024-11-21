@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Decode .env file
         env:
@@ -47,12 +47,13 @@ jobs:
       - name: Start Python Application
         run: |
           # Start the Python application in the background
-          python main.py &
-          sleep 5
+          python main.py > app.log 2>&1 &
+          sleep 10
 
           # Check if the application is responding on port 8000
           if ! curl -sSf http://localhost:8000/health > /dev/null; then
-            echo "Python application failed to start"
+            echo "Python application failed to start. Logs:"
+            cat app.log
             exit 1
           fi
 
@@ -62,11 +63,12 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
         run: |
           # Start Celery worker in the background
-          celery -A app.celery worker --loglevel=info &
+          celery -A app.celery worker --loglevel=info > celery_worker.log 2>&1 &
           sleep 5
 
           # Check if the Celery worker is running
           if ! celery -A app.celery inspect ping; then
-            echo "Celery worker failed to start"
+            echo "Celery worker failed to start. Logs:"
+            cat celery_worker.log
             exit 1
           fi
