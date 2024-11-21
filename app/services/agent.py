@@ -1,10 +1,12 @@
+import time
+import threading
+import asyncio
+
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
-
-import asyncio
 
 from app.core.config import settings
 from app.core.database import Database
@@ -16,6 +18,7 @@ async def get_chatbot_settings():
     chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
     await Database.close_db()
     return chatbot_settings
+
 chatbot_settings = asyncio.run(get_chatbot_settings())
 questions = chatbot_settings.pop("questionsToAsk")
 
@@ -57,11 +60,51 @@ class ChatService:
       
         self.llm = llm
         self.store = {}
+
+        # Session Expiry and Check Interval
+        self.session_expiry = 30 * 60  # 30 minutes in seconds
+        self.check_interval = 60  # 1 min
+        self.lock = threading.Lock() 
+        self._start_session_cleaner()
+
+    # Session Cleaner function
+    def _start_session_cleaner(self):
+        def clean_sessions():
+            while True:
+                current_time = time.time()
+                print(f"Cleaning session function called {current_time} ", flush=True)
+                expired_sessions = [
+                    session_id for session_id, session_data in self.store.items()
+                    if current_time - session_data["last_active"] > self.session_expiry
+                ]
+                
+                for session_id in expired_sessions:
+                    with self.lock:  # Acquire the lock before deleting from `store`
+                        if session_id in self.store:
+                            print(f"Deleted Session: {self.store[session_id]}", flush=True)
+                            del self.store[session_id]
+                        else:
+                            print(f"Session ID {session_id} not found during cleanup.", flush=True)
+                        
+                time.sleep(self.check_interval)  # Check every minute
+        cleaner_thread = threading.Thread(target=clean_sessions, daemon=True)
+        cleaner_thread.start()
+    
+    def get_all_session_history(self):
+        return self.store
         
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
-            self.store[session_id] = ChatMessageHistory()
-        return self.store[session_id]
+            self.store[session_id] = {
+                "history": ChatMessageHistory(),
+                "last_active": time.time(),
+            }
+        else:
+            # Update the last active time
+            self.store[session_id]["last_active"] = time.time()
+            
+        # print("Session History",self.store[session_id])
+        return self.store[session_id]["history"]
         
     def refresh_session(self, session_id: str):
         if session_id not in self.store:
@@ -75,7 +118,7 @@ class ChatService:
         # Initialize RunnableWithMessageHistory
         conversational_chain = RunnableWithMessageHistory(
             self.chain,
-            self.get_session_history,
+            lambda sid: self.get_session_history(sid),
             input_messages_key="input",
             history_messages_key="chat_history",
         )
