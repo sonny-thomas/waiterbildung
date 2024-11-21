@@ -13,14 +13,20 @@ from app.core.database import Database
 
 store = {}
 
+# Must handle later properly with database
 async def get_chatbot_settings():
-    await Database.connect_db()
-    chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
-    await Database.close_db()
-    return chatbot_settings
+    try:
+        await Database.connect_db()
+        chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
+        return chatbot_settings
+    except Exception as e:
+        print(f"Error fetching chatbot settings: {e}")
+        return None
+    finally:
+        await Database.close_db()
 
 chatbot_settings = asyncio.run(get_chatbot_settings())
-questions = chatbot_settings.pop("questionsToAsk")
+questions = chatbot_settings.get("questionsToAsk", []) if chatbot_settings else []
 
 class ChatService:
     def __init__(self):
@@ -43,7 +49,7 @@ class ChatService:
             system_prompt += f"Question {idx} - {question}\n"
             
         system_prompt += "\n"
-        system_prompt += "- If you gather all answer to above questions from user, You will just respond `DONE` and Summary of User Info"
+        system_prompt += "- If you gather all answer to above questions from user, You will just respond `DONE` and conversation summary\n"
         print("-"*50)
         print(system_prompt)
         print("-"*50)
