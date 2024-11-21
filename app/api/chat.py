@@ -105,7 +105,5 @@ async def start_thread() -> dict:
     # source_tag_pattern = r'【\d+†source】'
     # response = re.sub(source_tag_pattern, '', response)
     
-    # response = "Hello, World!"
-    # return response
-
-
+    response = "Hello, World!"
+    return response
