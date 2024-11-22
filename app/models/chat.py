@@ -7,7 +7,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    thread_id: str
+    session_id: str
     message: str
 
 

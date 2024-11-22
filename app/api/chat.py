@@ -67,11 +67,10 @@ async def get_all_session_history():
 @router.post("/chat")
 async def chat(chat: ChatRequest):
     """Endpoint to handle chat requests."""
-    thread_id = chat.thread_id
-    thread_id = "1234"
+    session_id = chat.session_id
     message = chat.message
     
-    return StreamingResponse(client.get_answer(thread_id, message), media_type="text/plain")
+    return StreamingResponse(client.get_answer(session_id, message), media_type="text/plain")
 
 @router.get("/chat/settings")
 async def chat_settings():
