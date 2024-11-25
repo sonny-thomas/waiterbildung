@@ -16,8 +16,26 @@ class Database:
             Database.client.close()
 
     @staticmethod
+    def get_database():
+        return Database.client[settings.DATABASE_NAME]
+    
+    @staticmethod
     def get_collection(collection_name: str):
         return Database.client[settings.DATABASE_NAME][collection_name]
+
+    @staticmethod
+    async def aggregate(collection_name: str, pipeline: list):
+        """
+        Perform aggregation on a specified collection.
+
+        :param collection_name: Name of the MongoDB collection.
+        :param pipeline: Aggregation pipeline (list of stages).
+        :return: List of aggregation results.
+        """
+        collection = Database.get_collection(collection_name)
+        results = await collection.aggregate(pipeline).to_list(length=5)
+        
+        return results
     
     @staticmethod
     def is_connected() -> bool:
