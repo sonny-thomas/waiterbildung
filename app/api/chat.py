@@ -11,13 +11,10 @@ from app.services.chat import initialize_assistant
 
 from app.services.chat_new import insert_vector_embedding, remove_embedding_field, create_vector_index, get_relevant_courses
 from app.services.utils import generate_embedding_openai
-from app.services.agent import ChatService
+from app.services.agent import client
 
 router = APIRouter(tags=["chatbot"], prefix="")
 
-# client = OpenAI(api_key=settings.OPENAI_API_KEY)
-# assistant = asyncio.run(initialize_assistant(client))
-client  = ChatService()
 
 @router.post("/test/embedding")
 async def test_embedding(text: str) -> dict:
@@ -75,11 +72,10 @@ async def chat(chat: ChatRequest):
 @router.get("/chat/settings")
 async def chat_settings():
     """Endpoint to get chat settings."""
-    
+    print("sdfdsf")
     settings = await Database.get_collection("chatbotsettings").find_one()
     questions = settings.pop("questionsToAsk")
-    print(questions)
-    return "settings"
+    return questions
 
 @router.post("/start_thread")
 async def start_thread() -> dict:
