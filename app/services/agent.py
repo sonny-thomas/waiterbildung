@@ -1,6 +1,5 @@
 import time
 import threading
-import asyncio
 
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -12,24 +11,9 @@ from app.core.config import settings
 from app.core.database import Database
 
 store = {}
-
-# Must handle later properly with database
-async def get_chatbot_settings():
-    try:
-        await Database.connect_db()
-        chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
-        return chatbot_settings
-    except Exception as e:
-        print(f"Error fetching chatbot settings: {e}")
-        return None
-    finally:
-        await Database.close_db()
-
-chatbot_settings = asyncio.run(get_chatbot_settings())
-questions = chatbot_settings.get("questionsToAsk", []) if chatbot_settings else []
-
+        
 class ChatService:
-    def __init__(self):
+    async def initialize(self):
         
         llm = ChatOpenAI(api_key=settings.OPENAI_API_KEY, model_name=settings.OPENAI_CHAT_MODEL, streaming=True)
         # Answer question
@@ -45,6 +29,17 @@ class ChatService:
             "## Must follow the conversation story\n"
             "- Start with Greeting with one of following question\n"
         )
+        try:
+            await Database.connect_db()
+            chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
+        except Exception as e:
+            print(f"Error fetching chatbot settings: {e}")
+        finally:
+            await Database.close_db()
+        
+        questions = chatbot_settings.get("questionsToAsk", []) if chatbot_settings else []
+            
+        print(questions)
         for idx, question in enumerate(questions, start=1):
             system_prompt += f"Question {idx} - {question}\n"
             
@@ -139,3 +134,5 @@ class ChatService:
         # Iterate over the stream to get the response  
         for message in result_stream:
             yield message.content
+
+client = ChatService()
