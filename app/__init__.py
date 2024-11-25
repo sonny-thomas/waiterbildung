@@ -12,7 +12,7 @@ from app.services.agent import client
 
 
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app : FastAPI):
     """
     Lifecycle manager for the FastAPI application.
     Handles database connections and other startup/shutdown events.
