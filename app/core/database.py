@@ -1,5 +1,4 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-
 from app.core.config import settings
 
 
@@ -19,7 +18,7 @@ class Database:
     @staticmethod
     def get_collection(collection_name: str):
         return Database.client[settings.DATABASE_NAME][collection_name]
-
+    
     @staticmethod
     def is_connected() -> bool:
         return Database.client is not None and Database.client is not None
