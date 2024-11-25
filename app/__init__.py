@@ -9,7 +9,7 @@ from app.api.scraper import router as scraper_router
 from app.core.config import settings
 from app.core.database import Database
 from app.services.agent import client
-# from app.core.database import ChatbotSettings
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,7 +27,6 @@ async def lifespan(app: FastAPI):
         await Database.close_db()
         print("Closed DB")
         
-
 
 app = FastAPI(
     title=settings.APP_NAME,
