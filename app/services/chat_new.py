@@ -6,6 +6,8 @@ from app.core.config import settings
 from app.core.database import Database
 from app.services.utils import generate_embedding_openai
 from pymongo.operations import SearchIndexModel
+from motor.motor_asyncio import AsyncIOMotorClient
+
 
 # Remove embedding field from collection
 async def remove_embedding_field():
@@ -95,9 +97,8 @@ async def create_vector_index():
 
 # Get Relevant courses from index
 async def get_relevant_courses(query: str, limit: int = 5):
-    await Database.connect_db()
+    
     query_embedding = await generate_embedding_openai(query)
-    print("Querying Mongo Altas Index ...")
     pipeline = [
         {
             "$vectorSearch": {
@@ -121,6 +122,8 @@ async def get_relevant_courses(query: str, limit: int = 5):
             }
         }
     ]
-    cursor = Database.get_collection("courses").aggregate(pipeline)
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db = client[settings.DATABASE_NAME]
+    cursor = db["courses"].aggregate(pipeline)
     results = await cursor.to_list(length=limit)
     return results
