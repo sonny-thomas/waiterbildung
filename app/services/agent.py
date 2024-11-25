@@ -39,7 +39,6 @@ class ChatService:
         
         questions = chatbot_settings.get("questionsToAsk", []) if chatbot_settings else []
             
-        print(questions)
         for idx, question in enumerate(questions, start=1):
             system_prompt += f"Question {idx} - {question}\n"
             
