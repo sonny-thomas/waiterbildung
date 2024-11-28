@@ -5,7 +5,7 @@ from app.models.course import Course
 router = APIRouter(prefix="/courses", tags=["courses"])
 
 
-@router.get()
+@router.get("")
 async def list_courses(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
