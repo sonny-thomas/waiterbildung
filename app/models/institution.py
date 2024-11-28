@@ -19,4 +19,4 @@ class Institution(BaseModel):
     courses_scraped: Optional[int] = Field(default=None, exclude=True)
     completed_at: Optional[datetime] = Field(default=None, exclude=True)
     message: Optional[str] = Field(default=None, exclude=True)
-    target_fields: Optional[List[TargetField]] = Field(exclude=True)
+    target_fields: Optional[List[TargetField]] = Field(default=None, exclude=True)
