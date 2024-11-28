@@ -6,7 +6,7 @@ from app.models.institution import Institution
 router = APIRouter(prefix="/institutions", tags=["institutions"])
 
 
-@router.get("/")
+@router.get()
 async def list_institutions(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
