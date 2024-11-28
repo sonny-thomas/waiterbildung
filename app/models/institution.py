@@ -1,16 +1,22 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import Field, HttpUrl
+
+from app.models import BaseModel
+
+
+class TargetField(BaseModel):
+    name: str = Field(...)
 
 
 class Institution(BaseModel):
-    id: str
-    name: str
-    base_url: HttpUrl
-    status: str
-    task_id: str
-    created_at: datetime
-    completed_at: Optional[datetime] = None
-    message: Optional[str] = None
-    target_fields: list
+    _collection_name: str = "institutions"
+
+    name: str = Field(...)
+    website: HttpUrl = Field(...)
+    status: Optional[str] = Field(default=None, exclude=True)
+    courses_scraped: Optional[int] = Field(default=None, exclude=True)
+    completed_at: Optional[datetime] = Field(default=None, exclude=True)
+    message: Optional[str] = Field(default=None, exclude=True)
+    target_fields: Optional[List[TargetField]] = Field(exclude=True)

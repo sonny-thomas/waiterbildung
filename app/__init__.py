@@ -4,11 +4,13 @@ from celery import Celery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.course import router as course_router
+from app.api.institution import router as institution_router
 from app.api.chat import router as chat_router
 from app.api.scraper import router as scraper_router
 from app.core.config import settings
 from app.core.database import Database
-from app.services.agent import client
+# from app.services.agent import client
 
 
 @asynccontextmanager
@@ -19,19 +21,16 @@ async def lifespan(app: FastAPI):
     """
     try:
         await Database.connect_db()
-        print("Connected to database")
-        await client.initialize()
-        print("Initialized Chatbot")
+        # await client.initialize()
         yield
     finally:
         await Database.close_db()
-        print("Closed DB")
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Backend application for Waiterbildung Chatbot",
+    description="Backend application for Waiterbildung",
     lifespan=lifespan,
     debug=settings.DEBUG,
     docs_url=f"{settings.API_PREFIX}/docs",
@@ -47,6 +46,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(institution_router, prefix=settings.API_PREFIX)
+app.include_router(course_router, prefix=settings.API_PREFIX)
 app.include_router(scraper_router, prefix=settings.API_PREFIX)
 app.include_router(chat_router, prefix=settings.API_PREFIX)
 

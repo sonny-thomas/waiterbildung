@@ -34,6 +34,7 @@ class ChatService:
             chatbot_settings = await Database.get_collection("chatbotsettings_test").find_one()
         except Exception as e:
             print(f"Error fetching chatbot settings: {e}")
+            chatbot_settings = None
         finally:
             await Database.close_db()
         
