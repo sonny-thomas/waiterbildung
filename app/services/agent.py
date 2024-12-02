@@ -8,7 +8,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
 from app.core.config import settings
-from app.core.database import Database
+from app.core.database import db
 
 store = {}
 
@@ -33,7 +33,7 @@ class ChatService:
             "- Start with Greeting with one of following question\n"
         )
         try:
-            chatbot_settings = await Database.get_collection(
+            chatbot_settings = await db.get_collection(
                 "chatbotsettings_test"
             ).find_one()
         except Exception as e:

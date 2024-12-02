@@ -5,7 +5,7 @@ import aiohttp
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException
 
-from app.core.database import Database
+from app.core.database import db
 from app.models.institution import Institution
 from app.models.schema import EducationalProvider, Schema, SchemaRequest
 from app.services.extraction import extract_data_from_html
@@ -55,7 +55,7 @@ async def start_scraping(request: Schema, rerun: bool = False) -> EducationalPro
                 )
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    institutions = Database.get_collection("institutions")
+    institutions = db.get_collection("institutions")
 
     institution = await institutions.find_one({"base_url": base_url})
 

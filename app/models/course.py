@@ -1,13 +1,14 @@
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import ConfigDict, Field, HttpUrl
 
+from app.core.database import db
 from app.models import BaseModel
 from app.models.institution import Institution
 
 
 class Course(BaseModel):
-    _collection_name = "courses"
+    __collection_name__ = "courses"
 
     title: str = Field(...)
     description: str = Field(...)
@@ -19,13 +20,30 @@ class Course(BaseModel):
     model_config = ConfigDict(extra="allow", from_attributes=True)
 
     @classmethod
-    async def serialize(cls, courses: Any) -> Any:
-        courses = await super().serialize(courses)
-        if isinstance(courses, dict):
-            if isinstance(courses.get("institution"), str):
-                courses["institution"] = await Institution.get(courses["institution"])
-        elif isinstance(courses, list):
-            for course in courses:
-                if isinstance(course.get("institution"), str):
-                    course["institution"] = await Institution.get(course["institution"])
-        return courses
+    async def list(
+        cls,
+        page: int = 1,
+        limit: int = 10,
+        filters: Optional[Dict[str, Any]] = {},
+        sort: Optional[List[tuple]] = None,
+    ) -> List[Any]:
+        """
+        List documents with pagination and optional filtering/sorting
+
+        :param page: Page number for pagination
+        :param limit: Number of items per page
+        :param filter: Dictionary of filter conditions
+        :param sort: List of tuples for sorting (field, direction)
+        :return: List of serialized documents
+        """
+        collection = db.get_collection("courses")
+        skip = (page - 1) * limit
+
+        cursor = collection.find(filters).skip(skip).limit(limit)
+        if sort:
+            cursor = cursor.sort(sort)
+
+        documents = await cursor.to_list(length=limit)
+        for doc in documents:
+            doc["institution"] = await Institution.get(str(doc["institution"]))
+        return [cls(**doc) for doc in documents]

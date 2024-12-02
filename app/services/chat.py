@@ -1,10 +1,10 @@
-from app.core.database import Database
+from app.core.database import db
 import os
 
 
 async def initialize_assistant(client):
-    await Database.connect_db()
-    courses = await Database.get_collection("courses").find().to_list(None)
+    await db.connect_db()
+    courses = await db.get_collection("courses").find().to_list(None)
     if not courses:
         return
 
