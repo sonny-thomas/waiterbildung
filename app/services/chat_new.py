@@ -3,7 +3,7 @@ import json
 import asyncio
 from tqdm.asyncio import tqdm
 from app.core.config import settings
-from app.core.database import Database
+from app.core.database import db
 from app.services.utils import generate_embedding_openai
 from pymongo.operations import SearchIndexModel
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,8 +11,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 # Remove embedding field from collection
 async def remove_embedding_field():
-    await Database.connect_db()
-    collection = Database.get_collection("courses")
+    await db.connect_db()
+    collection = db.get_collection("courses")
     response = await collection.update_many(
         {"embedding": {"$exists": True}},  # Filter documents with "embedding" field
         {"$unset": {"embedding": ""}}     # Remove "embedding" field
@@ -20,15 +20,15 @@ async def remove_embedding_field():
     # Extract the required information
     modified_count = response.modified_count
     print(f"Modified Documents: {modified_count}")
-    await Database.close_db()
+    await db.close_db()
     return {"Modified Documents": modified_count}
     
 # Create Vector embedding in course courses
 async def insert_vector_embedding():
     # Insert vector embedding from course collection in db
-    await Database.connect_db()
+    await db.connect_db()
 
-    collection = Database.get_collection("courses")
+    collection = db.get_collection("courses")
     cursor = collection.find({"embedding": {"$eq": None}})
 
     # found documents count
@@ -67,13 +67,13 @@ async def insert_vector_embedding():
     tasks = [process_document(document) async for document in cursor]
     await asyncio.gather(*tasks)
     print("Completed processing all documents successfully")
-    await Database.close_db()
+    await db.close_db()
     return {"success_count": success_count, "failure_count": failure_count}
 
 # Create Index from Course Collection
 async def create_vector_index():
-    await Database.connect_db()
-    collection = Database.get_collection("courses")
+    await db.connect_db()
+    collection = db.get_collection("courses")
     search_index_model = SearchIndexModel(
         definition={
             "fields": [
@@ -90,7 +90,7 @@ async def create_vector_index():
     )
     
     result = await collection.create_search_index(model=search_index_model)
-    await Database.close_db()
+    await db.close_db()
     
     return result
 

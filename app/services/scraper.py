@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from bson import ObjectId
 
 from app.core.config import logger
-from app.core.database import Database
+from app.core.database import db
 from app.services.extraction import DataExtractor
 from app.services.utils import clean_html_content, fetch_html
 
@@ -21,18 +21,18 @@ async def save_course(course_data: Dict[str, Any], university: ObjectId) -> None
     course_data["created_at"] = datetime.now(timezone.utc)
     course_data["updated_at"] = datetime.now(timezone.utc)
 
-    existing_course = await Database.get_collection("courses").find_one(
+    existing_course = await db.get_collection("courses").find_one(
         {"course_url": course_data["course_url"], "university": university}
     )
 
     if existing_course:
-        await Database.get_collection("courses").update_one(
+        await db.get_collection("courses").update_one(
             {"_id": existing_course["_id"]},
             {"$set": {**course_data, "updated_at": datetime.now(timezone.utc)}},
         )
         logger.debug(f"Updated existing course: {course_data['course_url']}")
     else:
-        await Database.get_collection("courses").insert_one(course_data)
+        await db.get_collection("courses").insert_one(course_data)
         logger.debug(f"Inserted new course: {course_data['course_url']}")
 
 
@@ -156,7 +156,7 @@ async def process_url(university: Dict[str, Any]) -> None:
         logger.info(
             f"Completed processing {university['base_url']}. "
             f"Total URLs processed: {len(context.checked_urls)}, "
-            f"Total courses found: {await Database.get_collection('courses').count_documents({'university': university['_id']})}"
+            f"Total courses found: {await db.get_collection('courses').count_documents({'university': university['_id']})}"
         )
 
 
@@ -194,9 +194,9 @@ async def worker(
 
 async def scrape_university(university_id: str) -> Dict[str, Any]:
     """Main entry point for scraping job"""
-    await Database.connect_db()
+    await db.connect_db()
 
-    university = await Database.get_collection("universities").find_one_and_update(
+    university = await db.get_collection("universities").find_one_and_update(
         {"_id": ObjectId(university_id)},
         {"$set": {"status": "in_progress"}},
         return_document=True,
@@ -204,7 +204,7 @@ async def scrape_university(university_id: str) -> Dict[str, Any]:
 
     await process_url(university)
 
-    await Database.get_collection("universities").update_one(
+    await db.get_collection("universities").update_one(
         {"_id": ObjectId(university_id)},
         {
             "$set": {

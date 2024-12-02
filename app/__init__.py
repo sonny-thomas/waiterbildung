@@ -4,27 +4,27 @@ from celery import Celery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth import router as auth_router
+from app.api.user import router as user_router
 from app.api.course import router as course_router
 from app.api.institution import router as institution_router
 from app.api.chat import router as chat_router
 from app.api.scraper import router as scraper_router
 from app.core.config import settings
-from app.core.database import Database
-from app.services.agent import client
+from app.core.database import db
+# from app.services.agent import client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Lifecycle manager for the FastAPI application.
-    Handles database connections and other startup/shutdown events.
     """
     try:
-        await Database.connect_db()
-        await client.initialize()
+        # await client.initialize()
         yield
     finally:
-        await Database.close_db()
+        await db.close()
 
 
 app = FastAPI(
@@ -46,8 +46,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(institution_router, prefix=settings.API_PREFIX)
+app.include_router(auth_router, prefix=settings.API_PREFIX)
+app.include_router(user_router, prefix=settings.API_PREFIX)
 app.include_router(course_router, prefix=settings.API_PREFIX)
+app.include_router(institution_router, prefix=settings.API_PREFIX)
 app.include_router(scraper_router, prefix=settings.API_PREFIX)
 app.include_router(chat_router, prefix=settings.API_PREFIX)
 

@@ -1,3 +1,4 @@
+import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 
@@ -6,19 +7,19 @@ class Database:
     client: AsyncIOMotorClient = None
 
     @staticmethod
-    async def connect_db():
+    async def connect():
         if not Database.is_connected():
             Database.client = AsyncIOMotorClient(settings.MONGODB_URL)
 
     @staticmethod
-    async def close_db():
+    async def close():
         if Database.client:
             Database.client.close()
 
     @staticmethod
     def get_database():
         return Database.client[settings.DATABASE_NAME]
-    
+
     @staticmethod
     def get_collection(collection_name: str):
         return Database.client[settings.DATABASE_NAME][collection_name]
@@ -34,9 +35,18 @@ class Database:
         """
         collection = Database.get_collection(collection_name)
         results = await collection.aggregate(pipeline).to_list(length=5)
-        
+
         return results
-    
+
     @staticmethod
     def is_connected() -> bool:
         return Database.client is not None and Database.client is not None
+
+
+db = Database()
+asyncio.run(db.connect())
+user_collection = db.get_collection("users")
+chat_collection = db.get_collection("chats")
+institution_collection = db.get_collection("institutions")
+course_collection = db.get_collection("courses")
+scraper_collection = db.get_collection("scrapers")

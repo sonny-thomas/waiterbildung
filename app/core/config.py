@@ -43,7 +43,7 @@ class Settings(BaseSettings):
         os.getenv("FLOWER_UNAUTHENTICATED_API", "false").lower() == "true"
     )
 
-    # Apxplication Settings
+    # Application Settings
     APP_NAME: str = os.getenv("APP_NAME", "poc-scraper")
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     API_PORT: int = int(os.getenv("API_PORT", "8000"))
     API_PREFIX: str = os.getenv("API_PREFIX", "/api/v1")
     ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "*")
+
+    # Token Settings
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
 
     @field_validator("LOG_LEVEL")
     @classmethod

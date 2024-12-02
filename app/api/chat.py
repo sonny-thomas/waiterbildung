@@ -3,7 +3,7 @@ from uuid import uuid4
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from app.core.database import Database
+from app.core.database import db
 from app.models.chat import ChatRequest
 from app.services.agent import client
 from app.services.chat_new import (
@@ -84,7 +84,7 @@ async def chat(chat: ChatRequest):
 async def chat_settings():
     """Endpoint to get chat settings."""
     print("sdfdsf")
-    settings = await Database.get_collection("chatbotsettings").find_one()
+    settings = await db.get_collection("chatbotsettings").find_one()
     questions = settings.pop("questionsToAsk")
     return questions
 

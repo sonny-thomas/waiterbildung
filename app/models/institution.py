@@ -11,7 +11,7 @@ class TargetField(BaseModel):
 
 
 class Institution(BaseModel):
-    _collection_name: str = "institutions"
+    __collection_name__ = "institutions"
 
     name: str = Field(...)
     website: HttpUrl = Field(...)
