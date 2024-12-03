@@ -12,7 +12,7 @@ from app.api.chat import router as chat_router
 from app.api.scraper import router as scraper_router
 from app.core.config import settings
 from app.core.database import db
-# from app.services.agent import client
+from app.services.agent import client
 
 
 @asynccontextmanager
@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     Lifecycle manager for the FastAPI application.
     """
     try:
-        # await client.initialize()
+        await client.initialize()
         yield
     finally:
         await db.close()
