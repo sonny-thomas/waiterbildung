@@ -134,6 +134,12 @@ def is_admin(user: User = Depends(is_user)) -> User:
 
 def get_google_user_info(code: str) -> dict:
     """Exchanges google authorization code and retrieves user information."""
+    print("code", code)
+    print("settings.GOOGLE_TOKEN_URL", settings.GOOGLE_TOKEN_URL)
+    print("settings.GOOGLE_USERINFO_URL", settings.GOOGLE_USERINFO_URL)
+    print("settings.GOOGLE_CLIENT_ID", settings.GOOGLE_CLIENT_ID)
+    print("settings.GOOGLE_CLIENT_SECRET", settings.GOOGLE_CLIENT_SECRET)
+    print("settings.GOOGLE_REDIRECT_URI", settings.GOOGLE_REDIRECT_URI)
     try:
         response = requests.post(
             settings.GOOGLE_TOKEN_URL,
