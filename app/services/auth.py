@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import bcrypt
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import requests
 
 from app.core.config import settings
-from app.models.user import User, UserAuth, UserRole
+from app.models.user import User, UserRole
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/")
@@ -85,6 +86,7 @@ def verify_token(token: str, token_type: str = "access") -> str:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 async def is_user(token: str = Depends(oauth2_scheme)) -> User:
     """
     Check if the token is valid and retrieve the user information.
@@ -108,6 +110,7 @@ async def is_user(token: str = Depends(oauth2_scheme)) -> User:
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+
 def is_admin(user: User = Depends(is_user)) -> User:
     """
     Check if the user associated with the given token is an admin.
@@ -127,3 +130,34 @@ def is_admin(user: User = Depends(is_user)) -> User:
         status_code=status.HTTP_403_FORBIDDEN,
         detail="You do not have permission to access this resource",
     )
+
+
+def get_google_user_info(code: str) -> dict:
+    """Exchanges google authorization code and retrieves user information."""
+    try:
+        response = requests.post(
+            settings.GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        token_data = response.json()
+        access_token = token_data.get("access_token")
+
+        user_info_headers = {"Authorization": f"Bearer {access_token}"}
+        user_info_response = requests.get(
+            settings.GOOGLE_USERINFO_URL, headers=user_info_headers, timeout=10
+        )
+        user_info_response.raise_for_status()
+        return user_info_response.json()
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to fetch user information from Google",
+        )

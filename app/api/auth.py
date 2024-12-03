@@ -1,10 +1,10 @@
-import requests
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.models.user import User, UserAuth, UserLogin, UserRegister, UserRole
 from app.services.auth import (
     create_token,
+    get_google_user_info,
     hash_password,
     is_user,
     verify_password,
@@ -79,29 +79,22 @@ async def login_user_form(form_data: OAuth2PasswordRequestForm = Depends()) -> U
     )
 
 
-@router.get("/callback/google")
-async def google_callback(code: str):
-    """Handle Google OAuth2 callback"""
-    # Exchange the authorization code for an access token
-    token_response = await exchange_code_for_token(code)
-    id_token = token_response.get("id_token")
-    access_token = token_response.get("access_token")
-
-    # Verify the ID token
-    user_info = await verify_google_id_token(id_token)
-
-    # Check if user already exists
+@router.post("/google")
+async def login_with_google(code: str):
+    """Handle Google OAuth"""
+    user_info = get_google_user_info(code)
     user = await User.get(email=user_info["email"])
     if not user:
-        # Register new user
         user = await User(
+            first_name=user_info["name"],
+            last_name=user_info["family_name"],
             email=user_info["email"],
-            hashed_password=hash_password(""),  # No password for OAuth users
+            avatar=user_info["picture"],
+            hashed_password=hash_password(""),
             role=UserRole.USER,
             is_active=True,
         ).save()
 
-    # Create tokens
     access_token = create_token(
         data=user.id,
         token_type="access",
@@ -145,45 +138,3 @@ async def get_session(user: User = Depends(is_user)) -> User:
             detail="Invalid session",
         )
     return user
-
-GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-GOOGLE_CLIENT_ID = (
-    "390071238326-kih70pkv4u5t44tn8s1mikkveugpmcd1.apps.googleusercontent.com"
-)
-GOOGLE_CLIENT_SECRET = "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"
-GOOGLE_REDIRECT_URI = "http://localhost:3000"
-
-
-def exchange_code_for_token(code: str) -> dict:
-    """Exchange authorization code for access token"""
-
-    try:
-        response = requests.post(
-            GOOGLE_TOKEN_URL,
-            json={
-                "code": code,
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": GOOGLE_REDIRECT_URI,
-                "grant_type": "authorization_code",
-            },
-            timeout=10,
-        )
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to exchange code for token: {e}",
-        )
-
-
-def verify_google_id_token(id_token: str) -> dict:
-    """Verify Google ID token and return user info"""
-    response = requests.get(
-        GOOGLE_USERINFO_URL,
-        params={"id_token": id_token},
-    )
-    response.raise_for_status()
-    return response.json()
