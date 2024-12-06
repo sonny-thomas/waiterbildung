@@ -23,12 +23,15 @@ click==8.1.7
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
+cloudinary==1.41.0
 croniter==5.0.1
 cryptography==44.0.0
 dataclasses-json==0.6.7
 dill==0.3.9
 distro==1.9.0
 dnspython==2.7.0
+docopt==0.6.2
+dotmap==1.3.30
 email_validator==2.2.0
 eventlet==0.38.0
 fastapi==0.115.5
@@ -62,6 +65,7 @@ MarkupSafe==3.0.2
 marshmallow==3.23.1
 mccabe==0.7.0
 mdurl==0.1.2
+mjml==0.11.0
 motor==3.6.0
 multidict==6.1.0
 mypy-extensions==1.0.0
@@ -86,6 +90,7 @@ Pygments==2.18.0
 PyJWT==2.10.1
 pymongo==4.9.2
 PySocks==1.7.1
+pystache==0.6.5
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.17
@@ -95,6 +100,7 @@ redis==5.2.0
 regex==2024.11.6
 requests==2.32.3
 requests-toolbelt==1.0.0
+resend==2.4.0
 rich==13.9.4
 selenium==4.26.1
 shellingham==1.5.4
@@ -107,7 +113,7 @@ starlette==0.41.3
 tenacity==9.0.0
 tiktoken==0.8.0
 tomlkit==0.13.2
-tornado==6.4.2
+tornado==6.4.1
 tqdm==4.67.0
 trio==0.27.0
 trio-websocket==0.11.1
