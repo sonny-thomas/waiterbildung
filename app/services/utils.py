@@ -4,53 +4,55 @@ import aiohttp
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 
-from app.core.config import settings
+from app.core import settings
+
 OPENAI_EMBEDDING_MODEL = settings.OPENAI_EMBEDDING_MODEL
-OPENAI_API_KEY = settings.OPENAI_API_KEY # Ensure you set this environment variable
+OPENAI_API_KEY = settings.OPENAI_API_KEY  # Ensure you set this environment variable
+
 
 # Generate response from OpenAI
 async def generate(headers, data):
-    url = 'https://api.openai.com/v1/chat/completions'
+    url = "https://api.openai.com/v1/chat/completions"
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, data=json.dumps(data)) as response:
+        async with session.post(
+            url, headers=headers, data=json.dumps(data)
+        ) as response:
             if response.status != 200:
                 # Handle any errors appropriately
                 print(f"Error: {response.status} - {await response.text()}")
-                yield 'Error occurred while generating response.'
+                yield "Error occurred while generating response."
                 return
-            
+
             async for line in response.content:
-                decoded_line = line.decode('utf-8').strip()
-                if decoded_line and decoded_line != '[DONE]':
+                decoded_line = line.decode("utf-8").strip()
+                if decoded_line and decoded_line != "[DONE]":
                     try:
                         json_data = decoded_line[6:].strip()
-                        # Important the json 
+                        # Important the json
                         event_data = json.loads(str(json_data))
-                        text = event_data['choices'][0]['delta']['content']
+                        text = event_data["choices"][0]["delta"]["content"]
                         yield text
                     except Exception as e:
                         print(f"Error parsing SSE event: {e}")
-                        yield ''
-                            
-async def generate_embedding_openai(
-    text :str
-    ) -> list[float]:
-    url = 'https://api.openai.com/v1/embeddings'
+                        yield ""
+
+
+async def generate_embedding_openai(text: str) -> list[float]:
+    url = "https://api.openai.com/v1/embeddings"
     headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f"Bearer {OPENAI_API_KEY}"
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
     }
-    data = {
-        'model': OPENAI_EMBEDDING_MODEL,
-        'input': text
-    }
+    data = {"model": OPENAI_EMBEDDING_MODEL, "input": text}
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=headers, json=data) as response:
                 if response.status != 200:
                     # Handle errors appropriately
                     error_message = await response.text()
-                    raise Exception(f"Request failed with status {response.status}: {error_message}")
+                    raise Exception(
+                        f"Request failed with status {response.status}: {error_message}"
+                    )
                 response_json = await response.json()
                 embedding = response_json["data"][0]["embedding"]
                 return embedding

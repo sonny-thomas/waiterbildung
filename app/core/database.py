@@ -1,6 +1,8 @@
-import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
-from app.core.config import settings
+
+from app.core import Settings
+
+settings = Settings()
 
 
 class Database:
@@ -41,12 +43,3 @@ class Database:
     @staticmethod
     def is_connected() -> bool:
         return Database.client is not None and Database.client is not None
-
-
-db = Database()
-asyncio.run(db.connect())
-user_collection = db.get_collection("users")
-chat_collection = db.get_collection("chats")
-institution_collection = db.get_collection("institutions")
-course_collection = db.get_collection("courses")
-scraper_collection = db.get_collection("scrapers")

@@ -4,7 +4,7 @@ from uuid import uuid4
 from typing import List
 from openai import OpenAI
 import asyncio
-from app.core.config import logger, settings
+from app.core import logger, settings
 
 
 async def generate_schema(html_content: str, target_fields: List[str]) -> dict:

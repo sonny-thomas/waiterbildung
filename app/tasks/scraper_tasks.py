@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Dict
 
-from app import celery
+from app.core import celery
 from app.services.scraper import scrape_university
 
 

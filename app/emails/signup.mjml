@@ -1,0 +1,55 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="bold" font-weight="700" />
+      <mj-class name="center" align="center" />
+      <mj-all font-family="Arial, sans-serif" font-size="14px" color="#555555" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f9f9f9">
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-image width="200px" src="https://backend.waiterbildung.ch/api/file/emails/hello" alt="Hello Banner" />
+        <mj-text mj-class="center bold" font-size="24px" color="#37b5ff">
+          Welcome to Waiterbildung!
+        </mj-text>
+        <mj-divider border-color="#dfe2e8" padding-bottom="10px" />
+        <mj-text padding-bottom="10px"> Hi {{first_name}}, </mj-text>
+        <mj-text>
+          Thank you for joining <strong>Waiterbildung</strong>, where we help
+          you find the perfect courses tailored to your goals. Our AI is
+          designed to recommend the best study paths just for you, making your
+          learning journey easier and more effective.
+        </mj-text>
+        <mj-text padding-bottom="10px">
+          To get started, please verify your email address by clicking the
+          button below. This ensures your account is secure and ready to connect
+          you to your personalized recommendations.
+        </mj-text>
+        <mj-button font-size="14px" background-color="#37b5ff" color="white" mj-class="center bold" href="{{verification_link}}">
+          Verify Your Email
+        </mj-button>
+        <mj-text padding-bottom="5px">
+          If the button above doesn't work, copy and paste this link into your browser:
+        </mj-text>
+        <mj-text color="#555555" font-size="12px" padding-bottom="5px">
+          <a href="{{verification_link}}" style="color: #37b5ff">{{verification_link}}</a>
+        </mj-text>
+        <mj-text font-size="14px" color="#555555" padding-bottom="20px">
+          Please note that this link will expire in 24 hours.
+        </mj-text>
+        <mj-divider border-color="#dfe2e8" padding-bottom="20px" />
+        <mj-text mj-class="center" padding-bottom="10px">
+          We're here to help you achieve your learning goals.
+        </mj-text>
+        <mj-text mj-class="center" font-size="12px" color="#888888" padding-bottom="10px">
+          If you have any questions, feel free to
+          <a href="mailto:support@waiterbildung.ch" style="color: #37b5ff">contact our support team</a>.
+        </mj-text>
+        <mj-text mj-class="center" font-size="12px" color="#888888">
+          &copy; 2024 Waiterbildung, All rights reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

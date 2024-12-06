@@ -1,27 +1,25 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
 
-from app.core.database import db
+from app.core import db
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class BaseModel(BaseModel):
     __collection_name__: str
-
-    id: str = Field(default_factory=lambda: str(ObjectId()))
+    id: PyObjectId = Field(alias="_id", default_factory=lambda: str(ObjectId()))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    def __init__(self, *args, **kwargs):
-        if "_id" in kwargs:
-            kwargs["id"] = str(kwargs.pop("_id"))
-
-        if "id" not in kwargs:
-            kwargs["id"] = str(ObjectId())
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        self.id = data.get("id", self.id)
+        self.created_at = data.get("created_at", self.created_at)
+        self.updated_at = data.get("updated_at", self.updated_at)
 
     @classmethod
     async def list(
@@ -61,13 +59,17 @@ class BaseModel(BaseModel):
         """
         collection = db.get_collection(cls.__collection_name__)
         filter_params = {**kwargs}
-
         if id:
             try:
                 filter_params["_id"] = ObjectId(id)
             except Exception as e:
                 raise ValueError(f"Invalid ObjectId: {id}") from e
+
         doc = await collection.find_one(filter_params)
+
+        if not doc and id:
+            filter_params["_id"] = id
+            doc = await collection.find_one(filter_params)
 
         return cls(**doc) if doc else None
 
@@ -81,14 +83,12 @@ class BaseModel(BaseModel):
         collection = db.get_collection(self.__collection_name__)
 
         self.updated_at = datetime.now(timezone.utc)
-        doc = self.model_dump(mode="json")
+        doc = self.model_dump(by_alias=True, mode="json")
 
-        if self.hashed_password:
+        if hasattr(self, "hashed_password"):
             doc["hashed_password"] = self.hashed_password
 
-        doc["_id"] = ObjectId(doc.pop("id", None))
         await collection.update_one({"_id": doc["_id"]}, {"$set": doc}, upsert=True)
-        doc["id"] = str(doc.pop("_id", None))
 
         return self.__class__(**doc) if doc else None
 
@@ -99,5 +99,5 @@ class BaseModel(BaseModel):
         :return: Whether deletion was successful
         """
         collection = db.get_collection(self.__collection_name__)
-        result = await collection.delete_one({"id": self.id})
+        result = await collection.delete_one({"_id": self.id})
         return result.deleted_count > 0

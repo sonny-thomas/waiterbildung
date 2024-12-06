@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import requests
 
-from app.core.config import settings
+from app.core import settings
 from app.models.user import User, UserRole
 
 

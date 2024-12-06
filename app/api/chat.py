@@ -3,7 +3,7 @@ from uuid import uuid4
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from app.core.database import db
+from app.core import db
 from app.models.chat import ChatRequest
 from app.services.agent import client
 from app.services.chat_new import (

@@ -1,17 +1,17 @@
 from contextlib import asynccontextmanager
 
-from celery import Celery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.user import router as user_router
+from app.api.file import router as file_router
 from app.api.course import router as course_router
 from app.api.institution import router as institution_router
 from app.api.chat import router as chat_router
 from app.api.scraper import router as scraper_router
-from app.core.config import settings
-from app.core.database import db
+from app.core import settings
+from app.core import db
 from app.services.agent import client
 
 
@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     Lifecycle manager for the FastAPI application.
     """
     try:
-        await client.initialize()
+        # await client.initialize()
         yield
     finally:
         await db.close()
@@ -48,6 +48,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix=settings.API_PREFIX)
 app.include_router(user_router, prefix=settings.API_PREFIX)
+app.include_router(file_router, prefix=settings.API_PREFIX)
 app.include_router(course_router, prefix=settings.API_PREFIX)
 app.include_router(institution_router, prefix=settings.API_PREFIX)
 app.include_router(scraper_router, prefix=settings.API_PREFIX)
@@ -62,14 +63,3 @@ async def health_check():
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
     }
-
-
-celery = Celery(
-    "scraper_worker",
-    imports=["app.tasks.scraper_tasks"],
-    broker=settings.CELERY_BROKER_URL,
-    backend=settings.CELERY_RESULT_BACKEND,
-    broker_connection_retry_on_startup=True,
-    worker_prefetch_multiplier=1,
-    task_acks_late=True,
-)

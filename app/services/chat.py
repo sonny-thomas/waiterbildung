@@ -1,4 +1,4 @@
-from app.core.database import db
+from app.core import db
 import os
 
 

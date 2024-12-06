@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Optional
 
@@ -8,15 +7,14 @@ from pydantic_settings import BaseSettings
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 class Settings(BaseSettings):
     # OpenAI Settings
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_CHAT_MODEL: str = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
-    OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+    OPENAI_EMBEDDING_MODEL: str = os.getenv(
+        "OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002"
+    )
     OPENAI_EMBEDDING_DIMENSION: int = int(os.getenv("EMBEDDING_DIMENSION", 1536))
 
     # Database Settings
@@ -49,6 +47,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "0") == "1"
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
     # API Settings
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
@@ -64,9 +63,25 @@ class Settings(BaseSettings):
     # Google OAuth Settings
     GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
     GOOGLE_USERINFO_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
-    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "client-id.apps.googleusercontent.com")
-    GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "GOOGLE-CLIENT-SECRET")
+    GOOGLE_CLIENT_ID: str = os.getenv(
+        "GOOGLE_CLIENT_ID", "client-id.apps.googleusercontent.com"
+    )
+    GOOGLE_CLIENT_SECRET: str = os.getenv(
+        "GOOGLE_CLIENT_SECRET", "GOOGLE-ETINLC-TERSEC"
+    )
     GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:3000")
+
+    # Email Settings
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+    DEFAULT_FROM_EMAIL: str = os.getenv(
+        "DEFAULT_FROM_EMAIL", "Waiterbildung <hello@waiterbildung.ch>"
+    )
+
+    # Cloudinary Settings
+    CLOUDINARY_CLOUD_NAME: str = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+    CLOUDINARY_API_KEY: str = os.getenv("CLOUDINARY_API_KEY", "")
+    CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET", "")
+    CLOUDINARY_SECURE: bool = os.getenv("CLOUDINARY_SECURE", "true").lower() == "true"
 
     @field_validator("LOG_LEVEL")
     @classmethod
@@ -101,6 +116,3 @@ class Settings(BaseSettings):
     def api_url(self) -> str:
         protocol = "https" if self.SSL_ENABLED else "http"
         return f"{protocol}://{self.API_HOST}:{self.API_PORT}"
-
-
-settings = Settings()

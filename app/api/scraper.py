@@ -5,7 +5,7 @@ import aiohttp
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException
 
-from app.core.database import db
+from app.core import db
 from app.models.institution import Institution
 from app.models.schema import EducationalProvider, Schema, SchemaRequest
 from app.services.extraction import extract_data_from_html

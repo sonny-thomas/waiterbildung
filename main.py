@@ -1,4 +1,4 @@
-from app.core.config import settings
+from app.core import settings
 
 if __name__ == "__main__":
     import uvicorn

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 
-from app.core.config import logger
+from app.core import logger
 
 
 @dataclass
