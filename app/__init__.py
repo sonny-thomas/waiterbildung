@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     Lifecycle manager for the FastAPI application.
     """
     try:
-        # await client.initialize()
+        await client.initialize()
         yield
     finally:
         await db.close()
