@@ -34,12 +34,12 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/register")
-async def register_user(user: UserRegister) -> UserAuth:
+async def register_user(user: UserRegister) -> dict:
     """Register a new user"""
     if await User.get(email=user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+            detail="Email already registered, login to continue",
         )
     user: User = await User(
         **user.model_dump(),
@@ -49,16 +49,9 @@ async def register_user(user: UserRegister) -> UserAuth:
     verification: EmailVerification = await EmailVerification(id=user.id).save()
     send_welcome_email(user.email, user.first_name, verification.token)
 
-    access_token = create_token(
-        data=user.id,
-        token_type="access",
-    )
-    refresh_token = create_token(
-        data=user.id,
-        token_type="refresh",
-    )
-
-    return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
+    return {
+        "message": "User registered successfully, check your inbox for a verification email"
+    }
 
 
 @router.post("/verify-email")
@@ -119,17 +112,22 @@ async def login_user(user: UserLogin) -> UserAuth:
     """Authenticate and login a user"""
     password = user.password
     remember_me = user.remember_me
-    user = await User.get(email=user.email)
+    user: User = await User.get(email=user.email)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Invalid email or password",
         )
     if not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Invalid email or password",
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email not verified, check your inbox for a verification email",
         )
 
     access_token = create_token(
@@ -155,7 +153,8 @@ async def login_user_form(form_data: OAuth2PasswordRequestForm = Depends()) -> U
 async def login_with_google(request: Token) -> UserAuth:
     """Handle Google OAuth"""
     user_info = get_google_user_info(request.token)
-    user = await User.get(email=user_info["email"])
+    user: User = await User.get(email=user_info["email"])
+
     if not user:
         user = await User(
             first_name=user_info["name"],
@@ -164,9 +163,14 @@ async def login_with_google(request: Token) -> UserAuth:
             avatar=user_info["picture"],
             hashed_password=hash_password(""),
             role=UserRole.USER,
-            is_active=True,
+            is_verified=True,
         ).save()
         send_welcome_email(user.email, user.first_name)
+
+    if not user.avatar or not user.is_verified:
+        user.avatar = user_info["picture"]
+        user.is_verified = True
+        await user.save()
 
     access_token = create_token(
         data=user.id,
