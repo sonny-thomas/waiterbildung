@@ -37,8 +37,9 @@ class UserRegister(PydanticBaseModel):
 
 
 class UserLogin(PydanticBaseModel):
-    email_or_phone: str
+    email: EmailStr = Field()
     password: str
+    remember_me: Optional[bool] = Field(default=False)
 
 
 class UserAuth(PydanticBaseModel):
@@ -46,10 +47,20 @@ class UserAuth(PydanticBaseModel):
     refresh_token: str
     user: User
 
+
+class Email(PydanticBaseModel):
+    email: EmailStr = Field()
+
+class Token(PydanticBaseModel):
+    token: str = Field()
+
+class ResetPassword(PydanticBaseModel):
+    new_password: str = Field(..., min_length=8)
+    old_password: Optional[str] = Field(None)
+    token: Optional[str] = Field(None)
+
 class TokenBaseModel(BaseModel):
     token: str = Field(default_factory=lambda: secrets.token_urlsafe(32))
-    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-    used_at: Optional[datetime] = Field(None)
     verified_at: Optional[datetime] = Field(None)
 
     async def save(self) -> Dict[str, Any]:
