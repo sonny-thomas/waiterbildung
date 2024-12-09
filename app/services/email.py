@@ -60,7 +60,7 @@ def send_email_verified(email: str, first_name: str) -> Dict:
 def send_password_reset_request(email: str, first_name: str, reset_token: str) -> Dict:
     context = {
         "first_name": first_name,
-        "reset_link": f"{settings.FRONTEND_URL}/reset-password?token={reset_token}",
+        "reset_link": f"{settings.FRONTEND_URL}/forgot-password?token={reset_token}",
     }
     subject = "Reset your password"
     from_email = settings.DEFAULT_FROM_EMAIL
