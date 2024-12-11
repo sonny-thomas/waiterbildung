@@ -17,7 +17,7 @@ async def get_latest_courses() -> List[Course]:
     - Returns list of the latest 9 serialized courses
     """
     try:
-        courses: List[Course] = await Course.list(page=1, limit=9)
+        courses, _ = await Course.list(page=1, limit=9)
         return [await course.model_dump() for course in courses]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
