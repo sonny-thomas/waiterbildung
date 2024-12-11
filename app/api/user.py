@@ -16,7 +16,7 @@ async def list_users(
     role: Optional[UserRole] = Query(None),
     is_active: Optional[bool] = Query(None),
     is_verified: Optional[bool] = Query(None),
-    sort_by: Optional[str] = Query("updated_at"),
+    sort_by: Optional[str] = Query("created_at"),
     sort_order: Optional[str] = Query("asc"),
     _: User = Depends(is_user),
 ) -> UserList:
