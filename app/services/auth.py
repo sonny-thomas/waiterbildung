@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 import bcrypt
 import jwt
@@ -28,38 +27,38 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_token(
-    data: str, token_type: str = "access", expires_delta: Optional[timedelta] = None
-):
+    data: str, token_type: str = "access", remember_me: bool = False
+) -> str:
     """Create a JWT token"""
-    to_encode = {"id": data}
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        if token_type == "access":
-            expire = datetime.now(timezone.utc) + timedelta(
-                minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-            )
-        elif token_type == "refresh":
-            expire = datetime.now(timezone.utc) + timedelta(
+    to_encode = {"user_id": data, "remember_me": remember_me}
+    if token_type == "access":
+        exp = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    elif token_type == "refresh":
+        if remember_me:
+            exp = datetime.now(timezone.utc) + timedelta(
                 days=settings.REFRESH_TOKEN_EXPIRE_DAYS
             )
         else:
-            raise ValueError("Invalid token type")
-    to_encode.update({"exp": expire, "type": token_type})
+            exp = datetime.now(timezone.utc) + timedelta(days=1)
+    else:
+        raise ValueError("Invalid token type")
+    to_encode.update({"exp": exp, "type": token_type})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
     return encoded_jwt
 
 
-def verify_token(token: str, token_type: str = "access") -> str:
+def verify_token(token: str, token_type: str = "access") -> tuple:
     """
-    Verify a JWT token and return the user id if valid.
+    Verify a JWT token and return the user id and expiration time if valid.
 
     Args:
         token (str): The JWT token.
         token_type (str): The type of the token, either "access" or "refresh".
 
     Returns:
-        str: The user id if the token is valid.
+        tuple: The user id and expiration time if the token is valid.
 
     Raises:
         HTTPException: If the token is invalid or expired.
@@ -72,7 +71,7 @@ def verify_token(token: str, token_type: str = "access") -> str:
                 detail="Invalid token type",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        return payload.get("id")
+        return payload.get("user_id"), payload.get("remember_me")
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -100,7 +99,7 @@ async def is_user(token: str = Depends(oauth2_scheme)) -> User:
     Raises:
         HTTPException: If the token is invalid or user not found.
     """
-    user_id = verify_token(token)
+    user_id, _ = verify_token(token)
     user = await User.get(user_id)
     if user and user.is_active:
         return user

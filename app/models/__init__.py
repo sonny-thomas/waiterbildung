@@ -46,7 +46,8 @@ class BaseModel(BaseModel):
             cursor = cursor.sort(sort)
 
         documents = await cursor.to_list(length=limit)
-        return [cls(**doc) for doc in documents]
+        total = await collection.count_documents(filters)
+        return [cls(**doc) for doc in documents], total
 
     @classmethod
     async def get(cls, id: Optional[str] = None, **kwargs) -> Optional[Any]:

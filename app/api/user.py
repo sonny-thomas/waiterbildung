@@ -1,53 +1,84 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 
-from app.models.user import User, UserRole
-from app.services.auth import is_user
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from app.models.user import User, UserList, UserRole, Status
+from app.services.auth import is_user, is_admin
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("")
+@router.get("", response_model_by_alias=False)
 async def list_users(
     page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
-    first_name: Optional[str] = Query(None),
-    last_name: Optional[str] = Query(None),
-    email: Optional[str] = Query(None),
-    phone: Optional[str] = Query(None),
+    size: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
     role: Optional[UserRole] = Query(None),
     is_active: Optional[bool] = Query(None),
+    is_verified: Optional[bool] = Query(None),
+    sort_by: Optional[str] = Query("updated_at"),
+    sort_order: Optional[str] = Query("asc"),
     _: User = Depends(is_user),
-) -> List[User]:
+) -> UserList:
     """
     List users with optional filtering and pagination
 
     - Supports pagination
     - Optional filtering by:
-      * first_name (partial match)
-      * last_name (partial match)
-      * email (partial match)
-      * phone (partial match)
+      * search (partial match on first_name, last_name, email, phone, or full name)
       * role
       * is_active status
+      * is_verified status
+    - Optional sorting by a field in ascending or descending order
     - Returns list of serialized users
     """
-    filters = {
-        "first_name": {"$regex": first_name, "$options": "i"} if first_name else None,
-        "last_name": {"$regex": last_name, "$options": "i"} if last_name else None,
-        "email": {"$regex": email, "$options": "i"} if email else None,
-        "phone": {"$regex": phone, "$options": "i"} if phone else None,
-        "role": role.value if role else None,
-        "is_active": is_active if is_active is not None else None,
-    }
-    filters = {k: v for k, v in filters.items() if v is not None}
+    filters = {}
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        filters["$or"] = [
+            {"first_name": search_regex},
+            {"last_name": search_regex},
+            {"email": search_regex},
+            {"phone": search_regex},
+            {
+                "$expr": {
+                    "$regexMatch": {
+                        "input": {"$concat": ["$first_name", " ", "$last_name"]},
+                        "regex": search,
+                        "options": "i",
+                    }
+                }
+            },
+            {
+                "$expr": {
+                    "$regexMatch": {
+                        "input": {"$concat": ["$last_name", " ", "$first_name"]},
+                        "regex": search,
+                        "options": "i",
+                    }
+                }
+            },
+        ]
+    if role:
+        filters["role"] = role.value
+    if is_active is not None:
+        filters["is_active"] = is_active
+    if is_verified is not None:
+        filters["is_verified"] = is_verified
+
+    sort_order = 1 if sort_order == "asc" else -1
+    sort = [(sort_by, sort_order)]
+
     try:
-        return await User.list(page=page, limit=limit, filters=filters)
+        users, total = await User.list(
+            page=page, limit=size, filters=filters, sort=sort
+        )
+        return UserList(users=users, total=total, page=page, size=size)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model_by_alias=False)
 async def get_user(
     user_id: str,
     _: User = Depends(is_user),
@@ -60,4 +91,47 @@ async def get_user(
     user = await User.get(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@router.put("/{user_id}", response_model_by_alias=False)
+async def update_user(
+    user_id: str,
+    user: dict,
+    _: User = Depends(is_admin),
+) -> User:
+    """
+    Update a user by ID
+
+    - Requires admin privileges
+    - Returns 404 if user not found
+    - Returns the updated user
+    """
+    _user = await User.get(user_id)
+    if not _user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    for key, value in user.items():
+        setattr(_user, key, value)
+    await _user.save()
+    return _user
+
+
+@router.patch("/{user_id}/status", response_model_by_alias=False)
+async def update_user_status(
+    user_id: str,   
+    request: Status,
+    _=Depends(is_admin),
+) -> User:
+    """
+    Update a user's active status by ID
+
+    - Returns 404 if user not found
+    - Returns the updated user
+    """
+    user = await User.get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.is_active = request.is_active
+    await user.save()
     return user

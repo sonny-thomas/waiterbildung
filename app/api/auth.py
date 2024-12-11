@@ -1,8 +1,11 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.models.user import (
+    Email,
+    ResetPassword,
+    Token,
     User,
     UserAuth,
     UserLogin,
@@ -31,42 +34,36 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/register")
-async def register_user(user: UserRegister) -> UserAuth:
+async def register_user(user: UserRegister) -> dict:
     """Register a new user"""
     if await User.get(email=user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+            detail="Email already registered, login to continue",
         )
     user: User = await User(
         **user.model_dump(),
         hashed_password=hash_password(user.password),
+        is_active=False,
         role=UserRole.USER,
     ).save()
     verification: EmailVerification = await EmailVerification(id=user.id).save()
     send_welcome_email(user.email, user.first_name, verification.token)
 
-    access_token = create_token(
-        data=user.id,
-        token_type="access",
-    )
-    refresh_token = create_token(
-        data=user.id,
-        token_type="refresh",
-    )
-
-    return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
+    return {
+        "message": "User registered successfully, check your inbox for a verification email"
+    }
 
 
 @router.post("/verify-email")
-async def verify_email(token: str):
+async def verify_email(request: Token) -> dict:
     """Verify user's email"""
-    verification: EmailVerification = await EmailVerification.get(token=token)
+    verification: EmailVerification = await EmailVerification.get(token=request.token)
 
     if not verification:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid token",
+            detail="Invalid verification token, request a new one",
         )
 
     verification_time = datetime.fromisoformat(verification.updated_at)
@@ -92,18 +89,18 @@ async def verify_email(token: str):
 
 
 @router.post("/resend-verification-email")
-async def resend_verification_email(email: str):
+async def resend_verification_email(request: Email) -> dict:
     """Resend verification email"""
-    user = await User.get(email=email)
+    user: User = await User.get(email=request.email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail="User not found, register a new account",
         )
     if user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already verified",
+            detail="Email already verified, login to continue",
         )
 
     verification = await EmailVerification(id=user.id).save()
@@ -115,19 +112,28 @@ async def resend_verification_email(email: str):
 async def login_user(user: UserLogin) -> UserAuth:
     """Authenticate and login a user"""
     password = user.password
-    user = await User.get(email=user.email_or_phone) or await User.get(
-        phone=user.email_or_phone
-    )
+    remember_me = user.remember_me
+    user: User = await User.get(email=user.email)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Invalid email or password",
         )
     if not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Invalid email or password",
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email not verified, check your inbox for a verification email",
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is inactive, contact support",
         )
 
     access_token = create_token(
@@ -135,8 +141,7 @@ async def login_user(user: UserLogin) -> UserAuth:
         token_type="access",
     )
     refresh_token = create_token(
-        data=user.id,
-        token_type="refresh",
+        data=user.id, token_type="refresh", remember_me=remember_me
     )
 
     return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
@@ -146,15 +151,16 @@ async def login_user(user: UserLogin) -> UserAuth:
 async def login_user_form(form_data: OAuth2PasswordRequestForm = Depends()) -> UserAuth:
     """Authenticate and login a user using OAuth2 form data"""
     return await login_user(
-        UserLogin(email_or_phone=form_data.username, password=form_data.password)
+        UserLogin(email=form_data.username, password=form_data.password)
     )
 
 
 @router.post("/google")
-async def login_with_google(code: str):
+async def login_with_google(request: Token) -> UserAuth:
     """Handle Google OAuth"""
-    user_info = get_google_user_info(code)
-    user = await User.get(email=user_info["email"])
+    user_info = get_google_user_info(request.token)
+    user: User = await User.get(email=user_info["email"])
+
     if not user:
         user = await User(
             first_name=user_info["name"],
@@ -163,9 +169,14 @@ async def login_with_google(code: str):
             avatar=user_info["picture"],
             hashed_password=hash_password(""),
             role=UserRole.USER,
-            is_active=True,
+            is_verified=True,
         ).save()
         send_welcome_email(user.email, user.first_name)
+
+    if not user.avatar or not user.is_verified:
+        user.avatar = user_info["picture"]
+        user.is_verified = True
+        await user.save()
 
     access_token = create_token(
         data=user.id,
@@ -174,15 +185,16 @@ async def login_with_google(code: str):
     refresh_token = create_token(
         data=user.id,
         token_type="refresh",
+        remember_me=True,
     )
 
     return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
 
 
 @router.post("/refresh")
-async def refresh_token(refresh_token: str) -> UserAuth:
+async def refresh_token(request: Token) -> UserAuth:
     """Refresh access token"""
-    user_id = verify_token(refresh_token, token_type="refresh")
+    user_id, remember_me = verify_token(request.token, token_type="refresh")
     user = await User.get(id=user_id)
     if not user or not user.is_active:
         raise HTTPException(
@@ -196,26 +208,22 @@ async def refresh_token(refresh_token: str) -> UserAuth:
     refresh_token = create_token(
         data=user.id,
         token_type="refresh",
+        remember_me=remember_me,
     )
 
     return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
 
 
-@router.get("/session")
-async def get_session(user: User = Depends(is_user)) -> User:
-    """Get current user session"""
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid session",
-        )
+@router.get("/me")
+async def get_me(user: User = Depends(is_user)) -> User:
+    """Get current user"""
     return user
 
 
-@router.post("/send-password-reset")
-async def send_password_reset(email: str):
+@router.post("/forgot-password")
+async def forgot_password(request: Email) -> dict:
     """Send password reset link"""
-    user = await User.get(email=email)
+    user = await User.get(email=request.email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -228,21 +236,17 @@ async def send_password_reset(email: str):
 
 
 @router.post("/reset-password")
-async def reset_password(
-    new_password: str,
-    old_password: str = None,
-    token: str = None,
-):
+async def reset_password(request: ResetPassword) -> dict:
     """Reset user password"""
-    if old_password:
+    if request.old_password:
         user: User = await is_user()
-        if not verify_password(old_password, user.hashed_password):
+        if not verify_password(request.old_password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid old password",
             )
-    elif token:
-        password_reset = await PasswordReset.get(token=token)
+    elif request.token:
+        password_reset = await PasswordReset.get(token=request.token)
         if not password_reset:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -269,7 +273,7 @@ async def reset_password(
             detail="Either old_password or token must be provided",
         )
 
-    user.hashed_password = hash_password(new_password)
+    user.hashed_password = hash_password(request.new_password)
     await user.save()
     send_password_reset_success(user.email, user.first_name)
     return {"message": "Password reset successfully"}
