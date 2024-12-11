@@ -44,6 +44,7 @@ async def register_user(user: UserRegister) -> dict:
     user: User = await User(
         **user.model_dump(),
         hashed_password=hash_password(user.password),
+        is_active=False,
         role=UserRole.USER,
     ).save()
     verification: EmailVerification = await EmailVerification(id=user.id).save()
@@ -128,6 +129,11 @@ async def login_user(user: UserLogin) -> UserAuth:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email not verified, check your inbox for a verification email",
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is inactive, contact support",
         )
 
     access_token = create_token(
