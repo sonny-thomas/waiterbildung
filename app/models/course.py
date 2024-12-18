@@ -34,3 +34,41 @@ class Course(BaseModel):
         """
         user.bookmarked_courses.append(self.id)
         await user.save()
+
+
+# Define the Course schema
+class DefaultCourse(BaseModel):
+    """Default Course schema to structure the response."""
+    title: str = Field(description="The title of the course.")
+    description: str = Field(description="Course description in 1-2 sentences.")
+    diploma: str = Field(description="The diploma of the course.")
+    degree: Optional[str] = Field(
+        default="", description="Degree of the course ('Master', 'Bachelor', or empty string)."
+    )
+    teaching_language: Optional[str] = Field(
+        default="", description="Teaching language of the course."
+    )
+    etcs_points: Optional[int] = Field(
+        default=None, description="ETCS points of the course."
+    )
+    place: Optional[str] = Field(
+        default="", description="The location where the course is conducted."
+    )
+    start_date: Optional[str] = Field(
+        default="", description="The start date of the course."
+    )
+    end_date: Optional[str] = Field(
+        default="", description="The end date of the course."
+    )
+    studying_mode: Optional[str] = Field(
+        default="", description="Studying mode ('full-time', 'part-time', 'online', 'offline')."
+    )
+    duration: Optional[str] = Field(
+        default="", description="Duration of the course."
+    )
+    semester_fee: Optional[str] = Field(
+        default="", description="The semester fee of the course."
+    )
+    abroad_available: Optional[bool] = Field(
+        default=False, description="Whether studying abroad is available (True/False)."
+    )
