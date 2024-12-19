@@ -62,8 +62,10 @@ class Email(PydanticBaseModel):
 class Token(PydanticBaseModel):
     token: str = Field()
 
+
 class Status(PydanticBaseModel):
     is_active: bool = Field(default=True)
+
 
 class ResetPassword(PydanticBaseModel):
     new_password: str = Field(..., min_length=8)

@@ -119,7 +119,7 @@ async def update_user(
 
 @router.patch("/{user_id}/status", response_model_by_alias=False)
 async def update_user_status(
-    user_id: str,   
+    user_id: str,
     request: Status,
     _=Depends(is_admin),
 ) -> User:
