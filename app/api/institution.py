@@ -28,7 +28,6 @@ async def list_institutions(
     page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
     search: Optional[str] = Query(None),
-    is_active: Optional[bool] = Query(None),
     sort_by: Optional[str] = Query("created_at"),
     sort_order: Optional[str] = Query("asc"),
     _=Depends(is_user),
@@ -50,8 +49,6 @@ async def list_institutions(
             {"name": search_regex},
             {"description": search_regex},
         ]
-    if is_active is not None:
-        filters["is_active"] = is_active
 
     sort_order = 1 if sort_order == "asc" else -1
     sort = [(sort_by, sort_order)]
