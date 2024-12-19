@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from app.core import db
 from app.models.chat import ChatRequest
 from app.services.agent import client
-from app.services.chat_new import (
+from app.services.chat_v2 import (
     create_vector_index,
     get_relevant_courses,
     insert_vector_embedding,
@@ -83,7 +83,6 @@ async def chat(chat: ChatRequest):
 @router.get("/chat/settings")
 async def chat_settings():
     """Endpoint to get chat settings."""
-    print("sdfdsf")
     settings = await db.get_collection("chatbotsettings").find_one()
     questions = settings.pop("questionsToAsk")
     return questions
