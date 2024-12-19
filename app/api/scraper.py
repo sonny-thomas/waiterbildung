@@ -11,9 +11,9 @@ from app.models.schema import EducationalProvider, Schema, SchemaRequest
 from app.services.extraction import extract_data_from_html
 from app.services.schema import generate_schema
 from app.services.utils import fetch_html
+from app.services.course import generate_course
 
 router = APIRouter(tags=["scraper"], prefix="/scraper")
-
 
 @router.post("/generate-schema")
 async def generate_schema_endpoint(request: SchemaRequest) -> Schema:
@@ -25,7 +25,15 @@ async def generate_schema_endpoint(request: SchemaRequest) -> Schema:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@router.post("/generate-course")
+async def generate_course_from_url(course_url : str):
+    """Endpoint to generate schema from URL and target fields"""
+    try:
+        response = await generate_course(course_url)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.post("/scrape-page")
 async def scrape_course_page(request: Schema) -> dict:
     """Endpoint to scrape a single course page using a schema"""
