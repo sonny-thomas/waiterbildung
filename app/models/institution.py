@@ -28,26 +28,6 @@ class Institution(BaseModel):
         default=None, exclude=True
     )
 
-    @classmethod
-    async def list(
-        cls,
-        page: int = 1,
-        limit: int = 10,
-        filters: Optional[dict] = None,
-        sort: Optional[List[tuple]] = None,
-    ) -> dict:
-        documents, total = await super().list(page, limit, filters or {}, sort)
-        institutions = []
-        for doc in documents:
-            if doc.rep:
-                user = await User.get(doc.rep)
-                if user:
-                    doc.rep = user
-            institutions.append(doc)
-        return InstitutionList(
-            institutions=institutions, total=total, page=page, size=limit
-        )
-
 
 class InstitutionList(PydanticBaseModel):
     institutions: List[Institution]
