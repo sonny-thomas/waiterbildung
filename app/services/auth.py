@@ -99,7 +99,6 @@ async def is_user(token: str = Depends(oauth2_scheme)) -> User:
     Raises:
         HTTPException: If the token is invalid or user not found.
     """
-    return
     user_id, _ = verify_token(token)
     user = await User.get(user_id)
     if user and user.is_active:

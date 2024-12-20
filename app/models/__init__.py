@@ -23,9 +23,13 @@ class BaseModel(BaseModel):
 
     def __init__(self, **data: Any):
         if isinstance(data.get("created_at"), str):
-            data["created_at"] = datetime.fromisoformat(data["created_at"].replace('Z', '+00:00'))
+            data["created_at"] = datetime.fromisoformat(
+                data["created_at"].replace("Z", "+00:00")
+            )
         if isinstance(data.get("updated_at"), str):
-            data["updated_at"] = datetime.fromisoformat(data["updated_at"].replace('Z', '+00:00'))
+            data["updated_at"] = datetime.fromisoformat(
+                data["updated_at"].replace("Z", "+00:00")
+            )
         super().__init__(**data)
         self.id = data.get("id", self.id)
         self.created_at = data.get("created_at", self.created_at)
@@ -90,7 +94,7 @@ class BaseModel(BaseModel):
         return instances, total
 
     @classmethod
-    async def get(cls, id: str) -> Optional[Any]:
+    async def get(cls, id: Optional[str] = None, **kwargs) -> Optional[Any]:
         """
         Retrieve a single document by ID and expand Union[PyObjectId, Model] fields
 
@@ -99,8 +103,9 @@ class BaseModel(BaseModel):
         :return: Class instance of the document or None
         """
         collection = db.get_collection(cls.__collection_name__)
-        if id:
-            doc = await collection.find_one({"_id": id})
+        filters = {"_id": id} if id else {}
+        filters.update(kwargs)
+        doc = await collection.find_one(filters)
         if not doc:
             return None
 
@@ -123,9 +128,7 @@ class BaseModel(BaseModel):
                                 doc[field_name]
                             )
                             if expanded_model:
-                                setattr(
-                                    instance, field_name, expanded_model
-                                )
+                                setattr(instance, field_name, expanded_model)
 
         return instance
 
