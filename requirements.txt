@@ -93,7 +93,7 @@ PySocks==1.7.1
 pystache==0.6.5
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-python-multipart==0.0.17
+python-multipart==0.0.18
 pytz==2024.2
 PyYAML==6.0.2
 redis==5.2.0
