@@ -99,7 +99,6 @@ async def create_vector_index():
 
 # Get Relevant courses from index
 async def get_relevant_courses(query: str, limit: int = 5):
-
     query_embedding = await generate_embedding_openai(query)
     pipeline = [
         {

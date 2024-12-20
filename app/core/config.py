@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     )
     OPENAI_EMBEDDING_DIMENSION: int = int(os.getenv("EMBEDDING_DIMENSION", 1536))
 
+    # Langchain Settings
+    LANGCHAIN_TRACING_V2: bool = os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true"
+    LANGCHAIN_ENDPOINT: str = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
+    LANGCHAIN_API_KEY: str = os.getenv("LANGCHAIN_API_KEY", "")
+    LANGCHAIN_PROJECT: str = os.getenv("LANGCHAIN_PROJECT", "poc-scraper")
+    
     # Database Settings
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "poc-scraper")
