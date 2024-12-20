@@ -1,12 +1,10 @@
-from typing import Any, Dict, Optional, Union, List
+from typing import Optional, Union, List
 
-from pydantic import ConfigDict, Field, HttpUrl, BaseModel as PydanticBaseModel
+from pydantic import Field, HttpUrl, BaseModel as PydanticBaseModel
 
 from app.models import BaseModel, PyObjectId
 from app.models.institution import Institution
 from app.models.user import User
-
-# from app.models.review import Review  # Assuming you have a Review model
 
 
 class Course(BaseModel):
@@ -19,7 +17,7 @@ class Course(BaseModel):
     diploma: str = Field(description="The diploma of the course.")
     degree: Optional[str] = Field(
         default="",
-        description="Degree of the course ('Master', 'Bachelor', or empty string).",
+        description="Degree of the course ('Master', 'Bachelor', 'PhD' or 'Other').",
     )
     teaching_language: Optional[str] = Field(
         default="", description="Teaching language of the course."
@@ -51,39 +49,15 @@ class Course(BaseModel):
         description="Whether studying abroad is available (True/False).",
     )
     is_featured: Optional[bool] = Field(
-        default=False, description="Whether the course is featured."
+        default=False,
+        description="Whether the course is featured or not. Default is False.",
     )
     rating: Optional[float] = Field(
-        default=0.0, description="The rating of the course."
+        default=0.0, description="The rating of the course. Default is 0.0."
     )
-    course_url: HttpUrl = Field(...)
+    course_url: HttpUrl = Field(..., description="The URL of the course.")
     institution: Optional[Union[PyObjectId, Institution]] = Field(None)
     content: Optional[str] = Field(None, exclude=True)
-    # reviews: Optional[List[Review]] = Field(
-    #     default=[], description="List of reviews for the course."
-    # )
-
-    model_config = ConfigDict(extra="allow", from_attributes=True)
-
-    @classmethod
-    async def list(
-        cls,
-        page: int = 1,
-        limit: int = 10,
-        filters: Optional[dict] = None,
-        sort: Optional[List[tuple]] = None,
-    ) -> dict:
-        documents, total = await super().list(page, limit, filters or {}, sort)
-        courses = []
-        for doc in documents:
-            if doc.institution:
-                institution = await Institution.get(doc.institution)
-                if institution:
-                    doc.institution = institution
-            courses.append(doc)
-        return CourseList(
-            courses=courses, total=total, page=page, size=limit
-        )
 
     async def bookmark(self, user: User) -> None:
         """

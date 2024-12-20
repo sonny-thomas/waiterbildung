@@ -53,12 +53,28 @@ async def list_institutions(
     sort_order = 1 if sort_order == "asc" else -1
     sort = [(sort_by, sort_order)]
 
-    try:
-        return await Institution.list(
-            page=page, limit=size, filters=filters, sort=sort
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    institutions, total = await Institution.list(
+        page=page, limit=size, filters=filters, sort=sort
+    )
+
+    return InstitutionList(
+        institutions=institutions, total=total, page=page, size=size
+    )
+
+
+@router.get("/{institution_id}", response_model_by_alias=False)
+async def get_institution(
+    institution_id: str, _=Depends(is_user)
+) -> Institution:
+    """
+    Retrieve a specific institution by ID
+
+    - Returns 404 if institution not found
+    """
+    institution = await Institution.get(institution_id)
+    if not institution:
+        raise HTTPException(status_code=404, detail="Institution not found")
+    return institution
 
 
 @router.put("/{institution_id}", response_model_by_alias=False)
@@ -81,19 +97,4 @@ async def update_institution(
     for key, value in institution_data.items():
         setattr(institution, key, value)
     await institution.save()
-    return institution
-
-
-@router.get("/{institution_id}")
-async def get_institution(
-    institution_id: str, _=Depends(is_user)
-) -> Institution:
-    """
-    Retrieve a specific institution by ID
-
-    - Returns 404 if institution not found
-    """
-    institution = await Institution.get(institution_id)
-    if not institution:
-        raise HTTPException(status_code=404, detail="Institution not found")
     return institution
