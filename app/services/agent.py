@@ -74,7 +74,6 @@ class ChatService:
         def clean_sessions():
             while True:
                 current_time = time.time()
-                print(f"Cleaning session function called {current_time} ", flush=True)
                 expired_sessions = [
                     session_id
                     for session_id, session_data in self.store.items()

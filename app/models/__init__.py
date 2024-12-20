@@ -134,24 +134,45 @@ class BaseModel(BaseModel):
 
     async def save(self) -> Dict[str, Any]:
         """
-        Save the current instance to the database
+        Save the current instance to the database and return expanded object
 
-        :param include: Set of fields to include in the saved document
-        :return: Serialized saved document
+        :return: Serialized saved document with expanded references
         """
         collection = db.get_collection(self.__collection_name__)
-
         self.updated_at = datetime.now(timezone.utc)
+
+        # Store original objects before converting to IDs
+        original_values = {}
+
+        # Convert expanded models to IDs for saving
+        for field_name, field in self.model_fields.items():
+            if (
+                field.annotation
+                and hasattr(field.annotation, "__origin__")
+                and field.annotation.__origin__ is Union
+                and PyObjectId in field.annotation.__args__
+            ):
+                value = getattr(self, field_name)
+                if value and hasattr(value, "id"):
+                    original_values[field_name] = value
+                    setattr(self, field_name, value.id)
+
         doc = self.model_dump(by_alias=True, mode="json")
 
-        if hasattr(self, "hashed_password"):
+        if self.__class__.__name__ == "User" and hasattr(
+            self, "hashed_password"
+        ):
             doc["hashed_password"] = self.hashed_password
 
         await collection.update_one(
             {"_id": doc["_id"]}, {"$set": doc}, upsert=True
         )
 
-        return self.__class__(**doc) if doc else None
+        # Restore original objects
+        for field_name, value in original_values.items():
+            setattr(self, field_name, value)
+
+        return self
 
     async def delete(self) -> bool:
         """

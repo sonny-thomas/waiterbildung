@@ -94,8 +94,7 @@ async def update_course(
 
     for key, value in course_data.items():
         setattr(course, key, value)
-    await course.save()
-    return course
+    return await course.save()
 
 
 @router.post("/{course_id}/bookmark")
