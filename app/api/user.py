@@ -43,7 +43,9 @@ async def list_users(
             {
                 "$expr": {
                     "$regexMatch": {
-                        "input": {"$concat": ["$first_name", " ", "$last_name"]},
+                        "input": {
+                            "$concat": ["$first_name", " ", "$last_name"]
+                        },
                         "regex": search,
                         "options": "i",
                     }
@@ -52,7 +54,9 @@ async def list_users(
             {
                 "$expr": {
                     "$regexMatch": {
-                        "input": {"$concat": ["$last_name", " ", "$first_name"]},
+                        "input": {
+                            "$concat": ["$last_name", " ", "$first_name"]
+                        },
                         "regex": search,
                         "options": "i",
                     }
