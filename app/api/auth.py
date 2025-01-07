@@ -44,7 +44,7 @@ async def register_user(user: UserRegister) -> dict:
     user: User = await User(
         **user.model_dump(),
         hashed_password=hash_password(user.password),
-        is_active=False,
+        is_active=True,
         role=UserRole.USER,
     ).save()
     verification: EmailVerification = await EmailVerification(id=user.id).save()
