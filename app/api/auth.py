@@ -66,7 +66,7 @@ async def verify_email(request: Token) -> dict:
             detail="Invalid verification token, request a new one",
         )
 
-    verification_time = datetime.fromisoformat(verification.updated_at)
+    verification_time = verification.updated_at
     if (datetime.now(timezone.utc) - verification_time).total_seconds() > 86400:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
