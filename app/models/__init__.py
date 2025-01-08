@@ -6,7 +6,14 @@ from pydantic import BaseModel, BeforeValidator, Field
 
 from app.core import db
 
-PyObjectId = Annotated[str, BeforeValidator(str)]
+def parse_objectid(value: Any) -> str:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, str) and ObjectId.is_valid(value):
+        return value
+    raise ValueError("Invalid ObjectId")
+
+PyObjectId = Annotated[str, BeforeValidator(parse_objectid)]
 
 
 class BaseModel(BaseModel):
@@ -39,7 +46,7 @@ class BaseModel(BaseModel):
     async def list(
         cls,
         page: int = 1,
-        limit: int = 10,
+        limit: Optional[int] = None,
         filters: Optional[Dict[str, Any]] = {},
         sort: Optional[List[tuple]] = None,
     ) -> Tuple[List[Any], int]:
@@ -47,19 +54,23 @@ class BaseModel(BaseModel):
         List documents with pagination and optional filtering/sorting
 
         :param page: Page number for pagination
-        :param limit: Number of items per page
+        :param limit: Number of items per page (None for all items)
         :param filter: Dictionary of filter conditions
         :param sort: List of tuples for sorting (field, direction)
         :return: Tuple of list of instances and total count
         """
         collection = db.get_collection(cls.__collection_name__)
-        skip = (page - 1) * limit
+        skip = (page - 1) * (limit or 0)
 
-        cursor = collection.find(filters).skip(skip).limit(limit)
+        cursor = collection.find(filters)
+        if skip > 0:
+            cursor = cursor.skip(skip)
+        if limit:
+            cursor = cursor.limit(limit)
         if sort:
             cursor = cursor.sort(sort)
 
-        documents = await cursor.to_list(length=limit)
+        documents = await cursor.to_list(length=None)
         total = await collection.count_documents(filters)
 
         instances = []
@@ -77,6 +88,8 @@ class BaseModel(BaseModel):
                         if (
                             model_type is not PyObjectId
                             and model_type is not type(None)
+                            and isinstance(model_type, type)
+                            and hasattr(model_type, 'get')
                         ):
                             if doc.get(field_name):
                                 expanded_model = await model_type.get(
@@ -90,7 +103,6 @@ class BaseModel(BaseModel):
                                     )
 
             instances.append(instance)
-
         return instances, total
 
     @classmethod

@@ -2,11 +2,12 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.models.course import Course, CourseList
+from app.models.course import AddReview, Course, CourseList
 from app.models.user import User
 from app.services.auth import is_user
 
 router = APIRouter(prefix="/courses", tags=["courses"])
+
 
 @router.get("/latest", response_model_by_alias=False)
 async def get_latest_courses() -> List[Course]:
@@ -20,7 +21,9 @@ async def get_latest_courses() -> List[Course]:
         courses, _ = await Course.list(page=1, limit=9)
         return courses
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching courses: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching courses: {str(e)}"
+        )
 
 
 @router.get("", response_model_by_alias=False)
@@ -113,5 +116,28 @@ async def bookmark_course(
             raise HTTPException(status_code=404, detail="Course not found")
         await course.bookmark(user)
         return {"message": "Course bookmarked successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{course_id}/review")
+async def review_course(
+    course_id: str,
+    review: AddReview,
+    user: User = Depends(is_user),
+) -> dict:
+    """
+    Review a specific course by ID
+
+    - Requires rating between 1-5 stars
+    - Optional comment
+    - Returns success message if review is added
+    """
+    try:
+        course: Course = await Course.get(course_id)
+        if not course:
+            raise HTTPException(status_code=404, detail="Course not found")
+        await course.review(user, review.rating, review.comment)
+        return {"message": "Course reviewed successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

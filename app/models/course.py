@@ -7,6 +7,17 @@ from app.models.institution import Institution
 from app.models.user import User
 
 
+class Review(BaseModel):
+    user: User = Field(...)
+    comment: str = Field(...)
+    rating: float = Field(...)
+
+
+class AddReview(PydanticBaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    comment: str = Field(default=None)
+
+
 class Course(BaseModel):
     __collection_name__ = "courses"
 
@@ -52,6 +63,9 @@ class Course(BaseModel):
         default=False,
         description="Whether the course is featured or not. Default is False.",
     )
+    reviews: Optional[List[Union[Review]]] = Field(
+        default=[], description="List of reviews for the course."
+    )
     rating: Optional[float] = Field(
         default=0.0, description="The rating of the course. Default is 0.0."
     )
@@ -63,10 +77,38 @@ class Course(BaseModel):
         """
         Bookmark this course for a user
 
-        :param user_id: ID of the user
+        :param user: The user who wants to bookmark the course
         """
         user.bookmarked_courses.append(self.id)
         await user.save()
+
+    async def review(self, user: User, rating: float, comment: str) -> None:
+        """
+        Review this course for a user. Only one review per user is allowed.
+
+        :param user_id: ID of the user
+        :param rating: Rating of the course
+        :param comment: comment of the review
+        """
+        # Find existing review in the course's reviews list
+        existing_review = next(
+            (r for r in self.reviews if r.user.id == user.id), None
+        )
+
+        if existing_review:
+            existing_review.rating = rating
+            existing_review.comment = comment
+        else:
+            review = Review(
+            user=user,
+            rating=rating,
+            comment=comment,
+            )
+            self.reviews.append(review)
+
+        # Update course rating
+        self.rating = sum(r.rating for r in self.reviews) / len(self.reviews)
+        await self.save()
 
 
 class CourseList(PydanticBaseModel):

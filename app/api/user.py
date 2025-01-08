@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.models.user import User, UserList, UserRole, Status
+# from app.models.review import Review, ReviewList
 from app.services.auth import is_user, is_admin
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -80,6 +81,26 @@ async def list_users(
         return UserList(users=users, total=total, page=page, size=size)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# @router.get("/reviews", response_model_by_alias=False)
+# async def get_user_reviews(
+#     page: int = Query(1, ge=1),
+#     size: int = Query(10, ge=1, le=100),
+#     user: User = Depends(is_user),
+# ) -> ReviewList:
+#     """
+#     Retrieve the current user's reviews
+
+#     - Returns list of serialized reviews
+#     """
+#     try:
+#         reviews, total = await Review.list(
+#             page=page, limit=size, filters={"user": user.id}
+#         )
+#         return ReviewList(reviews=reviews, total=total, page=page, size=size)
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{user_id}", response_model_by_alias=False)
