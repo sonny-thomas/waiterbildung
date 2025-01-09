@@ -147,7 +147,7 @@ async def login_user(user: UserLogin) -> UserAuth:
     return UserAuth(access_token=access_token, refresh_token=refresh_token, user=user)
 
 
-@router.post("/login/", include_in_schema=False)
+@router.post("/login/oauth", include_in_schema=False)
 async def login_user_form(form_data: OAuth2PasswordRequestForm = Depends()) -> UserAuth:
     """Authenticate and login a user using OAuth2 form data"""
     return await login_user(

@@ -90,7 +90,6 @@ class Course(BaseModel):
         :param rating: Rating of the course
         :param comment: comment of the review
         """
-        # Find existing review in the course's reviews list
         existing_review = next(
             (r for r in self.reviews if r.user.id == user.id), None
         )
@@ -106,7 +105,6 @@ class Course(BaseModel):
             )
             self.reviews.append(review)
 
-        # Update course rating
         self.rating = sum(r.rating for r in self.reviews) / len(self.reviews)
         await self.save()
 

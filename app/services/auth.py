@@ -10,7 +10,7 @@ from app.core import settings
 from app.models.user import User, UserRole
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/oauth")
 
 
 def hash_password(password: str) -> str:
