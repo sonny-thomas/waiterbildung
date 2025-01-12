@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
     REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "w41t3rb1ldung")
     REDIS_DB: str = os.getenv("REDIS_DB", "waiterbildung")
+    REDIS_URI: str = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
     # Token Settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key")
