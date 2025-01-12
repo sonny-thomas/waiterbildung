@@ -14,7 +14,7 @@ pydantic-settings
 python-multipart
 pystache
 rq
-rq-dashboard-fast
+rq-dashboard
 sqlalchemy[mypy]
 tldextract
 uvicorn[standard]

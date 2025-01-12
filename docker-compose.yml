@@ -47,6 +47,16 @@ services:
       ADMINER_DESIGN: pepa-linha
       ADMINER_DEFAULT_SERVER: postgres
 
+  rq-dashboard:
+    image: waiterbildung:latest
+    command: rq-dashboard --bind rq-dashboard --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
+    env_file:
+      - .env
+    ports:
+      - "9181:9181"
+    depends_on:
+      - redis
+
   postgres:
     image: pgvector/pgvector:pg16
     env_file:

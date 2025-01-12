@@ -3,7 +3,6 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from rq_dashboard_fast import RedisQueueDashboard
 
 from app.api import api_router
 from app.core.config import settings
@@ -35,10 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-rq_dashboard = RedisQueueDashboard(settings.REDIS_URI, url_prefix="/rq")
-
-app.mount("/rq", rq_dashboard)
 
 
 @app.get("/", tags=["health"])
