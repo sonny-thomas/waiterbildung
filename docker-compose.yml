@@ -41,21 +41,21 @@ services:
     depends_on:
       - api
 
-  adminer:
-    image: adminer
-    environment:
-      ADMINER_DESIGN: pepa-linha
-      ADMINER_DEFAULT_SERVER: postgres
-
-  rq-dashboard:
+  rq:
     image: waiterbildung:latest
-    command: rq-dashboard --bind rq-dashboard --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
+    command: rq-dashboard --bind rq --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
     env_file:
       - .env
     ports:
       - "9181:9181"
     depends_on:
       - redis
+
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DESIGN: pepa-linha
+      ADMINER_DEFAULT_SERVER: postgres
 
   postgres:
     image: pgvector/pgvector:pg16
