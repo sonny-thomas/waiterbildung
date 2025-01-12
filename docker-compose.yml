@@ -43,7 +43,7 @@ services:
 
   rq:
     image: waiterbildung:latest
-    command: rq-dashboard --bind rq --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
+    command: sh -c "rq-dashboard --bind rq --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
     env_file:
       - .env
     ports:
