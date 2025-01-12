@@ -1,45 +1,37 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Generator
 
-from app.core import Settings
+from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, sessionmaker
 
-settings = Settings()
+from app.core.config import settings
 
 
-class Database:
-    client: AsyncIOMotorClient = None
+def get_db_engine() -> Engine:
+    """Get db engine:
+    This function returns the database engine.
+    It is used to create the database session.
+    """
+    return create_engine(settings.DATABASE_URI)
 
-    @staticmethod
-    async def connect():
-        if not Database.is_connected():
-            Database.client = AsyncIOMotorClient(settings.MONGODB_URL)
 
-    @staticmethod
-    async def close():
-        if Database.client:
-            Database.client.close()
+db_engine = get_db_engine()
 
-    @staticmethod
-    def get_database():
-        return Database.client[settings.DATABASE_NAME]
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
 
-    @staticmethod
-    def get_collection(collection_name: str):
-        return Database.client[settings.DATABASE_NAME][collection_name]
+Base = declarative_base()
 
-    @staticmethod
-    async def aggregate(collection_name: str, pipeline: list):
-        """
-        Perform aggregation on a specified collection.
 
-        :param collection_name: Name of the MongoDB collection.
-        :param pipeline: Aggregation pipeline (list of stages).
-        :return: List of aggregation results.
-        """
-        collection = Database.get_collection(collection_name)
-        results = await collection.aggregate(pipeline).to_list(length=5)
-
-        return results
-
-    @staticmethod
-    def is_connected() -> bool:
-        return Database.client is not None and Database.client is not None
+def get_db() -> Generator[Session, None, None]:
+    """
+    Get db:
+        This function returns the database session.
+        It is used in the in any router file to get
+        the database session.
+    """
+    database: Session = SessionLocal()
+    try:
+        yield database
+    finally:
+        database.close()

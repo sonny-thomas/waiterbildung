@@ -1,36 +1,57 @@
-from datetime import datetime
-from typing import List, Optional, Union
+from typing import Optional
 
-from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Field, HttpUrl
+from pydantic import HttpUrl
+from sqlalchemy import Boolean
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import Float, String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models import BaseModel, PyObjectId
-from app.models.user import User
-
-
-class TargetField(BaseModel):
-    name: str = Field(...)
+from app.core.database import SessionLocal
+from app.core.logger import logger
+from app.core.scraper import Scraper
+from app.models import BaseModel
+from app.schemas.institution import ScraperStatus
 
 
 class Institution(BaseModel):
-    __collection_name__ = "institutions"
+    __tablename__ = "institutions"
 
-    name: str = Field(...)
-    rep: Optional[Union[PyObjectId, User]] = Field(None)
-    website: HttpUrl = Field(...)
-    status: Optional[str] = Field(default=None)
-    is_active: Optional[bool] = Field(default=True)
-    courses_scraped: Optional[int] = Field(default=0)
-    avg_rating: Optional[float] = Field(default=0)
-    completed_at: Optional[datetime] = Field(default=None, exclude=True)
-    message: Optional[str] = Field(default=None, exclude=True)
-    target_fields: Optional[List[TargetField]] = Field(
-        default=None, exclude=True
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    domain: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    logo: Mapped[Optional[HttpUrl]] = mapped_column(String(500), nullable=True)
+    scraper_status: Mapped[ScraperStatus] = mapped_column(
+        SQLEnum(ScraperStatus), nullable=False, default=ScraperStatus.queued
     )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
 
+    async def scrape_courses(
+        self,
+        domain: str,
+        url: str,
+        selector: str,
+        hero_image_selector: str,
+        max_courses: int,
+    ) -> None:
+        """Scrape courses from the institution's website"""
+        db = SessionLocal()
+        try:
+            scraper = Scraper(
+                self.id, domain, url, selector, hero_image_selector, max_courses
+            )
+            self.scraper_status = ScraperStatus.in_progress
+            db.add(self)
+            db.commit()
 
-class InstitutionList(PydanticBaseModel):
-    institutions: List[Institution]
-    total: int
-    page: int
-    size: int
+            await scraper.crawl()
+            self.scraper_status = ScraperStatus.completed
+            db.add(self)
+        except Exception:
+            logger.exception(
+                f"Failed to scrape courses for {self.name} ({self.domain})"
+            )
+            self.scraper_status = ScraperStatus.failed
+            db.add(self)
+        finally:
+            db.commit()
+            db.close()

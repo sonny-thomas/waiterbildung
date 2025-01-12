@@ -1,103 +1,67 @@
-from datetime import datetime, timezone
-from enum import Enum
+import enum
 import secrets
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Optional
 
-from pydantic import Field, EmailStr, BaseModel as PydanticBaseModel, HttpUrl
+from sqlalchemy import Boolean, DateTime
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
+from app.core.email import send_verification_email
 from app.models import BaseModel
-from app.core import db
+from app.models.course import course_bookmarks
 
 
-class UserRole(Enum):
-    USER = "user"
-    ADMIN = "admin"
+class UserRole(enum.Enum):
+    user = "user"
+    instructor = "instructor"
+    admin = "admin"
 
 
 class User(BaseModel):
-    __collection_name__ = "users"
+    __tablename__ = "users"
 
-    first_name: str = Field(...)
-    last_name: str = Field(...)
-    email: EmailStr = Field(..., unique=True)
-    phone: Optional[str] = Field(None, unique=False)
-    avatar: Optional[HttpUrl] = Field(None)
-    hashed_password: Optional[str] = Field(None, exclude=True)
-    role: UserRole = Field(...)
-    is_active: bool = Field(default=True)
-    is_verified: bool = Field(default=False)
-    bookmarked_courses: List = Field(default=[])
+    first_name: Mapped[str] = mapped_column(String(30), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(30), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True
+    )
+    phone: Mapped[Optional[str]] = mapped_column(
+        String(20), unique=False, nullable=True
+    )
+    password: Mapped[str] = mapped_column(String, nullable=False)
+    avatar: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    role: Mapped[UserRole] = mapped_column(
+        SQLEnum(UserRole), nullable=False, default=UserRole.user
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    verification_token: Mapped[Optional[str]] = mapped_column(
+        String(255), unique=True, nullable=True
+    )
+    verification_token_expires: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
 
+    institution_id: Mapped[Optional[str]] = mapped_column(
+        ForeignKey("institutions.id"), nullable=True
+    )
+    institution = relationship(
+        "Institution", backref=backref("instructors", lazy="dynamic")
+    )
 
-class UserList(PydanticBaseModel):
-    users: List[User]
-    total: int
-    page: int
-    size: int
+    bookmarked_courses = relationship(
+        "Course",
+        secondary=course_bookmarks,
+        backref=backref("bookmarked_by", lazy="dynamic"),
+    )
 
-
-class UserRegister(PydanticBaseModel):
-    first_name: str = Field(...)
-    last_name: str = Field(...)
-    email: EmailStr = Field(..., unique=True)
-    password: Optional[str] = Field("", min_length=8)
-
-
-class UserLogin(PydanticBaseModel):
-    email: EmailStr = Field()
-    password: str
-    remember_me: Optional[bool] = Field(default=False)
-
-
-class UserAuth(PydanticBaseModel):
-    access_token: str
-    refresh_token: str
-    user: User
-
-
-class Email(PydanticBaseModel):
-    email: EmailStr = Field()
-
-
-class Token(PydanticBaseModel):
-    token: str = Field()
-
-
-class Status(PydanticBaseModel):
-    is_active: bool = Field(default=True)
-
-
-class ResetPassword(PydanticBaseModel):
-    new_password: str = Field(..., min_length=8)
-    old_password: Optional[str] = Field(None)
-    token: Optional[str] = Field(None)
-
-
-class TokenBaseModel(BaseModel):
-    token: str = Field(default_factory=lambda: secrets.token_urlsafe(32))
-    verified_at: Optional[datetime] = Field(None)
-
-    async def save(self) -> Dict[str, Any]:
-        """
-        Save the current instance to the database
-
-        :param include: Set of fields to include in the saved document
-        :return: Serialized saved document
-        """
-        collection = db.get_collection(self.__collection_name__)
-
-        self.token = secrets.token_urlsafe(32)
-        self.updated_at = datetime.now(timezone.utc)
-        doc = self.model_dump(by_alias=True, mode="json")
-
-        await collection.update_one({"_id": doc["_id"]}, {"$set": doc}, upsert=True)
-
-        return self.__class__(**doc) if doc else None
-
-
-class EmailVerification(TokenBaseModel):
-    __collection_name__ = "email_verification"
-
-
-class PasswordReset(TokenBaseModel):
-    __collection_name__ = "password_reset"
+    def send_verification_token(self) -> str:
+        """Generate verification token and set expiration"""
+        self.verification_token = secrets.token_urlsafe(32)
+        self.verification_token_expires = datetime.now(timezone.utc) + timedelta(
+            hours=24
+        )
+        send_verification_email(self.email, self.first_name, self.verification_token)
+        return self.verification_token

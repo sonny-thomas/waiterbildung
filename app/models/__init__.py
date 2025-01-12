@@ -1,197 +1,85 @@
 from datetime import datetime, timezone
-from typing import Annotated, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, TypeVar
+from uuid import uuid4
 
-from bson import ObjectId
-from pydantic import BaseModel, BeforeValidator, Field
+from sqlalchemy import DateTime, String, or_
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from app.core import db
+from app.core.database import Base
 
-def parse_objectid(value: Any) -> str:
-    if isinstance(value, ObjectId):
-        return str(value)
-    if isinstance(value, str) and ObjectId.is_valid(value):
-        return value
-    raise ValueError("Invalid ObjectId")
-
-PyObjectId = Annotated[str, BeforeValidator(parse_objectid)]
+T = TypeVar("T", bound="BaseModel")
 
 
-class BaseModel(BaseModel):
-    __collection_name__: str
-    id: PyObjectId = Field(
-        alias="_id", default_factory=lambda: str(ObjectId())
+class BaseModel(Base):
+    __abstract__ = True
+
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid4())
     )
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    def __init__(self, **data: Any):
-        if isinstance(data.get("created_at"), str):
-            data["created_at"] = datetime.fromisoformat(
-                data["created_at"].replace("Z", "+00:00")
-            )
-        if isinstance(data.get("updated_at"), str):
-            data["updated_at"] = datetime.fromisoformat(
-                data["updated_at"].replace("Z", "+00:00")
-            )
-        super().__init__(**data)
-        self.id = data.get("id", self.id)
-        self.created_at = data.get("created_at", self.created_at)
-        self.updated_at = data.get("updated_at", self.updated_at)
+    def model_dump(self) -> dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     @classmethod
-    async def list(
-        cls,
-        page: int = 1,
-        limit: Optional[int] = None,
-        filters: Optional[Dict[str, Any]] = {},
-        sort: Optional[List[tuple]] = None,
-    ) -> Tuple[List[Any], int]:
-        """
-        List documents with pagination and optional filtering/sorting
-
-        :param page: Page number for pagination
-        :param limit: Number of items per page (None for all items)
-        :param filter: Dictionary of filter conditions
-        :param sort: List of tuples for sorting (field, direction)
-        :return: Tuple of list of instances and total count
-        """
-        collection = db.get_collection(cls.__collection_name__)
-        skip = (page - 1) * (limit or 0)
-
-        cursor = collection.find(filters)
-        if skip > 0:
-            cursor = cursor.skip(skip)
-        if limit:
-            cursor = cursor.limit(limit)
-        if sort:
-            cursor = cursor.sort(sort)
-
-        documents = await cursor.to_list(length=None)
-        total = await collection.count_documents(filters)
-
-        instances = []
-        for doc in documents:
-            instance = cls(**doc)
-
-            for field_name, field in cls.model_fields.items():
-                if (
-                    field.annotation
-                    and hasattr(field.annotation, "__origin__")
-                    and field.annotation.__origin__ is Union
-                    and PyObjectId in field.annotation.__args__
-                ):
-                    for model_type in field.annotation.__args__:
-                        if (
-                            model_type is not PyObjectId
-                            and model_type is not type(None)
-                            and isinstance(model_type, type)
-                            and hasattr(model_type, 'get')
-                        ):
-                            if doc.get(field_name):
-                                expanded_model = await model_type.get(
-                                    doc[field_name]
-                                )
-                                if expanded_model:
-                                    setattr(
-                                        instance,
-                                        field_name,
-                                        expanded_model,
-                                    )
-
-            instances.append(instance)
-        return instances, total
+    def get(cls: type[T], db: Session, **filters: Any) -> T | None:
+        query = db.query(cls)
+        for attr, value in filters.items():
+            if hasattr(cls, attr):
+                query = query.filter(getattr(cls, attr) == value)
+        return query.first()
 
     @classmethod
-    async def get(cls, id: Optional[str] = None, **kwargs) -> Optional[Any]:
-        """
-        Retrieve a single document by ID and expand Union[PyObjectId, Model] fields
+    def get_all(
+        cls: type[T],
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        sort_by: str | None = None,
+        descending: bool = False,
+        use_or: bool = True,
+        **filters: Any,
+    ) -> list["BaseModel"]:
+        query = db.query(cls)
 
-        :param id: Document ID
-        :param kwargs: Additional filter parameters
-        :return: Class instance of the document or None
-        """
-        collection = db.get_collection(cls.__collection_name__)
-        filters = {"_id": id} if id else {}
-        filters.update(kwargs)
-        doc = await collection.find_one(filters)
-        if not doc:
-            return None
+        if filters:
+            filter_conditions = []
+            for attr, value in filters.items():
+                if hasattr(cls, attr):
+                    filter_conditions.append(getattr(cls, attr) == value)
+                else:
+                    raise ValueError(f"Invalid filter attribute: {attr}")
 
-        instance = cls(**doc)
+            if use_or:
+                query = query.filter(or_(*filter_conditions))
+            else:
+                for condition in filter_conditions:
+                    query = query.filter(condition)
 
-        for field_name, field in cls.model_fields.items():
-            if (
-                field.annotation
-                and hasattr(field.annotation, "__origin__")
-                and field.annotation.__origin__ is Union
-                and PyObjectId in field.annotation.__args__
-            ):
-                for model_type in field.annotation.__args__:
-                    if (
-                        model_type is not PyObjectId
-                        and model_type is not type(None)
-                    ):
-                        if doc.get(field_name):
-                            expanded_model = await model_type.get(
-                                doc[field_name]
-                            )
-                            if expanded_model:
-                                setattr(instance, field_name, expanded_model)
+        if sort_by:
+            if not hasattr(cls, sort_by):
+                raise ValueError(f"Invalid sort attribute: {sort_by}")
+            order_attr = getattr(cls, sort_by)
+            query = query.order_by(order_attr.desc() if descending else order_attr)
 
-        return instance
+        query = query.offset(skip).limit(limit)
+        return query.all()
 
-    async def save(self) -> Dict[str, Any]:
-        """
-        Save the current instance to the database and return expanded object
-
-        :return: Serialized saved document with expanded references
-        """
-        collection = db.get_collection(self.__collection_name__)
-        self.updated_at = datetime.now(timezone.utc)
-
-        # Store original objects before converting to IDs
-        original_values = {}
-
-        # Convert expanded models to IDs for saving
-        for field_name, field in self.model_fields.items():
-            if (
-                field.annotation
-                and hasattr(field.annotation, "__origin__")
-                and field.annotation.__origin__ is Union
-                and PyObjectId in field.annotation.__args__
-            ):
-                value = getattr(self, field_name)
-                if value and hasattr(value, "id"):
-                    original_values[field_name] = value
-                    setattr(self, field_name, value.id)
-
-        doc = self.model_dump(by_alias=True, mode="json")
-
-        if self.__class__.__name__ == "User" and hasattr(
-            self, "hashed_password"
-        ):
-            doc["hashed_password"] = self.hashed_password
-
-        await collection.update_one(
-            {"_id": doc["_id"]}, {"$set": doc}, upsert=True
-        )
-
-        # Restore original objects
-        for field_name, value in original_values.items():
-            setattr(self, field_name, value)
-
+    def save(self: T, db: Session) -> T:
+        if not self.id:
+            db.add(self)
+        db.commit()
+        db.refresh(self)
         return self
 
-    async def delete(self) -> bool:
-        """
-        Delete the current instance from the database
-
-        :return: Whether deletion was successful
-        """
-        collection = db.get_collection(self.__collection_name__)
-        result = await collection.delete_one({"_id": self.id})
-        return result.deleted_count > 0
+    def delete(self, db: Session) -> bool:
+        db.delete(self)
+        db.commit()
+        return True

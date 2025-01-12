@@ -1,4 +1,37 @@
-.venv
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# Distribution / packaging
+.Python
+*.manifest
+*.spec
+
+# pyenv
+.python-version
+
+# FastAPI static files
+staticfiles/
+
+# Local development
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Environment Variables
 .env
-__pycache__
-*.pyc
+*.env
+
+
+# Editor config
+*.vscode/
+
+*.png

@@ -1,100 +1,84 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+import tldextract
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from app.models.institution import Institution, InstitutionList
-from app.services.auth import is_user
+from app.core.database import get_db
+from app.core.middleware import user_is_instructor
+from app.core.queue import scraper_queue
+from app.models.institution import Institution
+from app.models.user import User
+from app.schemas import PaginatedRequest
+from app.schemas.institution import (
+    InstitutionResponse,
+    ScrapeInstitution,
+    ScraperStatus,
+)
 
-router = APIRouter(prefix="/institutions", tags=["institutions"])
-
-
-@router.post("", response_model_by_alias=False)
-async def create_institution(
-    institution_data: dict,
-    _=Depends(is_user),
-) -> Institution:
-    """
-    Create a new institution
-
-    - Requires user authentication
-    - Returns the created institution
-    """
-    institution = Institution(**institution_data)
-    await institution.save()
-    return institution
+router = APIRouter(prefix="/institution", tags=["institutions"])
 
 
-@router.get("", response_model_by_alias=False)
-async def list_institutions(
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
-    search: Optional[str] = Query(None),
-    sort_by: Optional[str] = Query("created_at"),
-    sort_order: Optional[str] = Query("asc"),
-    _=Depends(is_user),
-) -> InstitutionList:
-    """
-    List institutions with optional filtering and pagination
-
-    - Supports pagination
-    - Optional filtering by:
-      * search (partial match on name, description)
-      * is_active status
-    - Optional sorting by a field in ascending or descending order
-    - Returns list of serialized institutions
-    """
-    filters = {}
-    if search:
-        search_regex = {"$regex": search, "$options": "i"}
-        filters["$or"] = [
-            {"name": search_regex},
-            {"description": search_regex},
-        ]
-
-    sort_order = 1 if sort_order == "asc" else -1
-    sort = [(sort_by, sort_order)]
-
-    institutions, total = await Institution.list(
-        page=page, limit=size, filters=filters, sort=sort
+@router.get("s")
+async def get_institutions(
+    filter: PaginatedRequest = Depends(),
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_instructor),
+) -> list[InstitutionResponse]:
+    """Get all institutions with pagination"""
+    institutions = Institution.get_all(
+        db,
+        skip=filter.skip,
+        limit=filter.limit,
+        sort_by=filter.sort_by,
+        descending=filter.descending,
+        use_or=filter.use_or,
     )
-
-    return InstitutionList(
-        institutions=institutions, total=total, page=page, size=size
-    )
-
-
-@router.get("/{institution_id}", response_model_by_alias=False)
-async def get_institution(
-    institution_id: str, _=Depends(is_user)
-) -> Institution:
-    """
-    Retrieve a specific institution by ID
-
-    - Returns 404 if institution not found
-    """
-    institution = await Institution.get(institution_id)
-    if not institution:
-        raise HTTPException(status_code=404, detail="Institution not found")
-    return institution
+    return [
+        InstitutionResponse(**institution.model_dump()) for institution in institutions
+    ]
 
 
-@router.put("/{institution_id}", response_model_by_alias=False)
-async def update_institution(
+@router.get("/{institution_id}")
+async def get_institution_by_id(
     institution_id: str,
-    institution_data: dict,
-    _=Depends(is_user),
-) -> Institution:
-    """
-    Update an institution by ID
-
-    - Requires user authentication
-    - Returns 404 if institution not found
-    - Returns the updated institution
-    """
-    institution = await Institution.get(institution_id)
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_instructor),
+) -> InstitutionResponse:
+    """Get an institution by ID"""
+    institution = Institution.get(db, id=institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
 
-    for key, value in institution_data.items():
-        setattr(institution, key, value)
-    await institution.save()
-    return institution
+    return InstitutionResponse(**institution.model_dump())
+
+
+@router.post("/scrape")
+async def run_scraper(
+    request: ScrapeInstitution,
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_instructor),
+) -> InstitutionResponse:
+    """Run the web scraper with the provided URL and selector"""
+    domain = tldextract.extract(str(request.start_url)).registered_domain
+    institution = Institution.get(db, domain=domain)
+    if institution is None:
+        institution = Institution(
+            name=request.name, domain=domain, logo=str(request.logo)
+        )
+    elif institution.scraper_status.value in ["queued", "in_progress"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Scraper is currently {institution.scraper_status.value} for this institution.",
+        )
+    institution.scraper_status = ScraperStatus.queued
+    institution.save(db)
+
+    scraper_queue.enqueue(
+        institution.scrape_courses,
+        domain,
+        str(request.start_url),
+        request.course_selector,
+        request.hero_image_selector,
+        request.max_courses,
+    )
+
+    return InstitutionResponse(**institution.model_dump())

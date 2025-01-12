@@ -1,76 +1,76 @@
-name: poc-scraper
+name: waiterbildung
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - adminer
+
   api:
-    image: poc-scraper:latest
+    image: waiterbildung:latest
+    command: sh -c "alembic revision --autogenerate -m 'auto' && alembic upgrade head && python main.py"
     build: .
-    ports:
-      - "${API_PORT}:${API_PORT}"
     env_file:
       - .env
     volumes:
-      - .:/app
+      - alembic_versions:/app/alembic/versions
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  celery_worker:
-    image: poc-scraper:latest
-    command: celery -A app.core.celery worker --loglevel=info
+  email-worker:
+    image: waiterbildung:latest
+    command: python worker.py email
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
-      redis:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
+      - api
 
-  celery_flower:
-    image: poc-scraper:latest
-    command: celery -A app.core.celery flower
-    ports:
-      - 5555:5555
+  scraper-worker:
+    image: waiterbildung:latest
+    command: python worker.py scraper
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
-      celery_worker:
-        condition: service_started
+      - api
 
-  mongodb:
-    image: mongo:latest
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DESIGN: pepa-linha
+      ADMINER_DEFAULT_SERVER: postgres
+
+  postgres:
+    image: pgvector/pgvector:pg16
     env_file:
       - .env
     volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh "${MONGODB_URL}" --quiet
-      interval: 3s
-      timeout: 3s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   redis:
-    image: redis:alpine
+    image: redis:latest
+    command: >
+      --requirepass ${REDIS_PASSWORD}
     env_file:
       - .env
-    volumes:
-      - redis_data:/data
     healthcheck:
-      test: redis-cli -u ${REDIS_URL} ping
-      interval: 3s
-      timeout: 3s
-      retries: 5
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
-  mongodb_data:
-  mongodb_config:
-  redis_data:
+  postgres_data:
+  alembic_versions:

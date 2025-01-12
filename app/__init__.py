@@ -1,41 +1,31 @@
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from rq_dashboard_fast import RedisQueueDashboard
 
-from app.api.auth import router as auth_router
-from app.api.user import router as user_router
-from app.api.file import router as file_router
-from app.api.course import router as course_router
-from app.api.institution import router as institution_router
-from app.api.chat import router as chat_router
-from app.api.scraper import router as scraper_router
-from app.core import settings
-from app.core import db
-from app.services.agent import client
+from app.api import api_router
+from app.core.config import settings
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Lifecycle manager for the FastAPI application.
-    """
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     try:
-        await client.initialize()
         yield
-    finally:
-        await db.close()
+    except Exception:
+        yield
 
 
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    description="Backend application for Waiterbildung",
+    title="Waiterbildung API",
+    version="1.0",
+    description="API for Waiterbildung",
     lifespan=lifespan,
     debug=settings.DEBUG,
+    openapi_url=f"{settings.API_PREFIX}/openapi.json",
     docs_url=f"{settings.API_PREFIX}/docs",
     redoc_url=f"{settings.API_PREFIX}/redoc",
-    openapi_url=f"{settings.API_PREFIX}/openapi.json",
 )
 
 app.add_middleware(
@@ -46,20 +36,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router, prefix=settings.API_PREFIX)
-app.include_router(user_router, prefix=settings.API_PREFIX)
-app.include_router(file_router, prefix=settings.API_PREFIX)
-app.include_router(course_router, prefix=settings.API_PREFIX)
-app.include_router(institution_router, prefix=settings.API_PREFIX)
-app.include_router(scraper_router, prefix=settings.API_PREFIX)
-app.include_router(chat_router, prefix=settings.API_PREFIX)
+rq_dashboard = RedisQueueDashboard(settings.REDIS_URI, url_prefix="/rq")
+
+app.mount("/rq", rq_dashboard)
 
 
-@app.get("/health")
-async def health_check():
+@app.get("/health", tags=["health"])
+async def health_check() -> dict:
     """Health check endpoint to verify API status"""
     return {
+        "message": "Waiterbildung API is running",
         "status": "healthy",
-        "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
     }
+
+
+app.include_router(api_router, prefix=settings.API_PREFIX)

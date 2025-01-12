@@ -1,120 +1,85 @@
-from typing import Optional, Union, List
+from enum import Enum
+from typing import Optional
 
-from pydantic import Field, HttpUrl, BaseModel as PydanticBaseModel
+from pydantic import HttpUrl
+from sqlalchemy import Boolean, Column
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import Float, ForeignKey, Integer, String, Table, Text
+from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
-from app.models import BaseModel, PyObjectId
-from app.models.institution import Institution
-from app.models.user import User
-
-
-class Review(BaseModel):
-    user: User = Field(...)
-    comment: str = Field(...)
-    rating: float = Field(...)
+from app.models import BaseModel
 
 
-class AddReview(PydanticBaseModel):
-    rating: int = Field(..., ge=1, le=5)
-    comment: str = Field(default=None)
+class DegreeType(str, Enum):
+    bachelor = "bachelor"
+    master = "master"
+    phd = "phd"
+    not_specified = "not_specified"
+
+
+class StudyMode(str, Enum):
+    full_time = "full_time"
+    part_time = "part_time"
+    online = "online"
+    hybrid = "hybrid"
+    not_specified = "not_specified"
 
 
 class Course(BaseModel):
-    __collection_name__ = "courses"
+    __tablename__ = "courses"
 
-    title: str = Field(description="The title of the course.")
-    description: str = Field(
-        description="Course description in 1-2 sentences."
-    )
-    diploma: str = Field(description="The diploma of the course.")
-    degree: Optional[str] = Field(
-        default="",
-        description="Degree of the course ('Master', 'Bachelor', 'PhD' or 'Other').",
-    )
-    teaching_language: Optional[str] = Field(
-        default="", description="Teaching language of the course."
-    )
-    ects_points: Optional[int] = Field(
-        default=None, description="ECTS points of the course."
-    )
-    place: Optional[str] = Field(
-        default="", description="The location where the course is conducted."
-    )
-    start_date: Optional[str] = Field(
-        default="", description="The start date of the course."
-    )
-    end_date: Optional[str] = Field(
-        default="", description="The end date of the course."
-    )
-    studying_mode: Optional[str] = Field(
-        default="",
-        description="Studying mode ('full-time', 'part-time', 'online', 'offline').",
-    )
-    duration: Optional[str] = Field(
-        default="", description="Duration of the course."
-    )
-    semester_fee: Optional[str] = Field(
-        default="", description="The semester fee of the course."
-    )
-    abroad_available: Optional[bool] = Field(
-        default=False,
-        description="Whether studying abroad is available (True/False).",
-    )
-    is_featured: Optional[bool] = Field(
-        default=False,
-        description="Whether the course is featured or not. Default is False.",
-    )
-    reviews: Optional[List[Union[Review]]] = Field(
-        default=[], description="List of reviews for the course."
-    )
-    rating: Optional[float] = Field(
-        default=0.0, description="The rating of the course. Default is 0.0."
-    )
-    course_url: HttpUrl = Field(..., description="The URL of the course.")
-    institution: Optional[Union[PyObjectId, Institution]] = Field(None)
-    content: Optional[str] = Field(None, exclude=True)
+    # Basic Information
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    hero_image: Mapped[Optional[HttpUrl]] = mapped_column(String(500), nullable=True)
 
-    async def bookmark(self, user: User) -> None:
-        """
-        Bookmark this course for a user
+    # Academic Details
+    degree_type: Mapped[Optional[DegreeType]] = mapped_column(
+        SQLEnum(DegreeType), nullable=True
+    )
+    study_mode: Mapped[Optional[StudyMode]] = mapped_column(
+        SQLEnum(StudyMode), nullable=True
+    )
+    ects_credits: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    teaching_language: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    diploma_awarded: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
-        :param user: The user who wants to bookmark the course
-        """
-        user.bookmarked_courses.append(self.id)
-        await user.save()
+    # Schedule and Duration
+    start_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    end_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    duration_in_semesters: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    application_deadline: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    async def review(self, user: User, rating: float, comment: str) -> None:
-        """
-        Review this course for a user. Only one review per user is allowed.
+    # Location and Delivery
+    campus_location: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    study_abroad_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    tuition_fee_per_semester: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True
+    )
 
-        :param user_id: ID of the user
-        :param rating: Rating of the course
-        :param comment: comment of the review
-        """
-        existing_review = next(
-            (r for r in self.reviews if r.user.id == user.id), None
-        )
+    # Web Links
+    url: Mapped[HttpUrl] = mapped_column(String(500), nullable=False)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
 
-        if existing_review:
-            existing_review.rating = rating
-            existing_review.comment = comment
-        else:
-            review = Review(
-            user=user,
-            rating=rating,
-            comment=comment,
-            )
-            self.reviews.append(review)
+    # Ratings and Reviews
+    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
+    total_reviews: Mapped[int] = mapped_column(Integer, default=0)
 
-        self.rating = sum(r.rating for r in self.reviews) / len(self.reviews)
-        await self.save()
+    # Additional Content
+    detailed_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Relationships
+    institution_id: Mapped[int] = mapped_column(
+        ForeignKey("institutions.id"), nullable=False
+    )
+    institution = relationship(
+        "Institution", backref=backref("courses", lazy="dynamic")
+    )
 
 
-class CourseList(PydanticBaseModel):
-    courses: List[Course] = Field(
-        default=[], description="The list of courses."
-    )
-    total: int = Field(description="The total number of courses available.")
-    page: int = Field(default=1, description="The current page number.")
-    size: int = Field(
-        default=10, description="The number of courses per page."
-    )
+course_bookmarks = Table(
+    "course_bookmarks",
+    BaseModel.metadata,
+    Column("user_id", String, ForeignKey("users.id"), primary_key=True),
+    Column("course_id", String, ForeignKey("courses.id"), primary_key=True),
+)
