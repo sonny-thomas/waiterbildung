@@ -41,7 +41,7 @@ rq_dashboard = RedisQueueDashboard(settings.REDIS_URI, url_prefix="/rq")
 app.mount("/rq", rq_dashboard)
 
 
-@app.get("/health", tags=["health"])
+@app.get("", tags=["health"])
 async def health_check() -> dict:
     """Health check endpoint to verify API status"""
     return {
