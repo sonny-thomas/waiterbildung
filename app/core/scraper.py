@@ -17,15 +17,15 @@ from app.schemas.course import ScrapeCourse
 from app.schemas.institution import ScrapeInstitution, ScraperStatus
 
 
-async def extract_and_save_course(
-    db: Session,
+async def extract_course(
+    db: Optional[Session],
     institution_id: str,
     url: str,
     html: str,
     hero_image_selector: Optional[str] = None,
     worker_id: int = 0,
-) -> None:
-    """Extract course data from HTML and save to database in one operation."""
+) -> Optional[Course]:
+    """Extract course data from HTML and optionally save to database."""
     logger.info(f"Worker {worker_id}: Extracting course from URL {url}")
     try:
         content = clean_html(html)
@@ -44,7 +44,7 @@ async def extract_and_save_course(
         data = completion.choices[0].message.parsed
         if not data:
             logger.info(f"Worker {worker_id}: No data extracted from {url}")
-            return
+            return None
 
         hero_image = None
         if hero_image_selector:
@@ -62,23 +62,29 @@ async def extract_and_save_course(
             "hero_image": hero_image,
         }
 
-        existing_course = Course.get(db, url=url)
-        if existing_course:
-            for key, value in course_data.items():
-                setattr(existing_course, key, value)
-            course = existing_course
-        else:
-            course = Course(institution_id=institution_id, **course_data)
+        if db:
+            existing_course = Course.get(db, url=url)
+            if existing_course:
+                for key, value in course_data.items():
+                    setattr(existing_course, key, value)
+                course = existing_course
+            else:
+                course = Course(institution_id=institution_id, **course_data)
 
-        course.save(db)
-        logger.info(f"Worker {worker_id}: Saved course {course.title}")
+            course.save(db)
+            logger.info(f"Worker {worker_id}: Saved course {course.title}")
+            return course
+
+        return Course(**course_data)
 
     except asyncio.TimeoutError:
         logger.error(f"Worker {worker_id}: Timeout extracting course from URL {url}")
+        return None
     except Exception as e:
         logger.exception(
             f"Worker {worker_id}: Error extracting course from URL {url}: {str(e)}"
         )
+        return None
 
 
 class Crawler:
@@ -163,7 +169,7 @@ class Crawler:
                         soup.select(self.course_selector)
                         and self.courses_found < self.max_courses
                     ):
-                        await extract_and_save_course(
+                        await extract_course(
                             self.db,
                             self.institution_id,
                             normalized_url,
@@ -233,6 +239,41 @@ class Crawler:
             self.db.close()
 
 
+async def scrape_course(
+    course_url: str,
+    course_selector: Optional[str] = None,
+    hero_image_selector: Optional[str] = None,
+) -> Optional[Course]:
+    """Scrape a single course URL and return the Course object."""
+    try:
+        timeout = aiohttp.ClientTimeout(total=30)
+        conn = aiohttp.TCPConnector(limit=100)
+        async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
+            async with session.get(course_url, allow_redirects=True) as response:
+                if response.status == 200:
+                    html = await response.text()
+                    
+                    if course_selector:
+                        soup = BeautifulSoup(html, "html.parser")
+                        if not soup.select(course_selector):
+                            logger.warning(f"URL {course_url} does not match course selector")
+                            return None
+
+                    course = await extract_course(
+                        None,
+                        "institution_id",
+                        str(response.url),
+                        html,
+                        hero_image_selector,
+                    )
+                    return course
+                return None
+    except Exception:
+        logger.exception(f"Error scraping course from URL {course_url}")
+        return None
+
+
+
 async def scrape_courses(
     institution_id: str,
     course_urls: List[str],
@@ -241,7 +282,6 @@ async def scrape_courses(
     """Scrape a list of known course URLs with controlled concurrency."""
     semaphore = asyncio.Semaphore(20)
     pending_urls: Set[str] = set()
-    print(course_urls)
 
     try:
         db = SessionLocal()
@@ -263,7 +303,7 @@ async def scrape_courses(
                         async with session.get(url, allow_redirects=True) as response:
                             if response.status == 200:
                                 html = await response.text()
-                                await extract_and_save_course(
+                                await extract_course(
                                     db,
                                     institution_id,
                                     str(url),
@@ -278,7 +318,6 @@ async def scrape_courses(
                 finally:
                     if url in pending_urls:
                         pending_urls.remove(url)
-
 
         tasks = [
             asyncio.create_task(process_single_url(url, i))

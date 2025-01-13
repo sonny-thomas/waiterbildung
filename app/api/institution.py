@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.middleware import user_is_admin, user_is_instructor
 from app.core.queue import scraper_queue
-from app.core.scraper import Crawler, scrape_courses
+from app.core.scraper import Crawler, scrape_courses, scrape_course
 from app.models.institution import Institution
 from app.models.user import User
 from app.schemas import PaginatedRequest
@@ -15,6 +15,7 @@ from app.schemas.institution import (
     AddInstitution,
     ScrapeInstitutionCourses,
 )
+from app.schemas.course import CourseResponse
 from app.core.utils import get_domain
 
 router = APIRouter(prefix="/institution", tags=["institutions"])
@@ -83,8 +84,7 @@ async def scrape_institution(
         )
     if get_domain(str(request.start_url)) != institution.domain:
         raise HTTPException(
-            status_code=400,
-            detail="URL domain does not match institution domain."
+            status_code=400, detail="URL domain does not match institution domain."
         )
 
     scraper = Crawler(institution.id, institution.domain, request)
@@ -117,7 +117,7 @@ async def scrape_institution_courses(
         if get_domain(str(url)) != institution.domain:
             raise HTTPException(
                 status_code=400,
-                detail=f"URL domain {get_domain(str(url))} does not match institution domain: {institution.domain}"
+                detail=f"URL domain {get_domain(str(url))} does not match institution domain: {institution.domain}",
             )
     scraper_queue.enqueue(
         scrape_courses, institution.id, request.course_urls, request.hero_image_selector
@@ -127,3 +127,24 @@ async def scrape_institution_courses(
     institution.save(db)
 
     return InstitutionResponse(**institution.model_dump())
+
+
+@router.post("/scrape_single_course")
+async def scrape_single_course(
+    course_url: str,
+    course_selector: str | None = None,
+    hero_image_selector: str | None = None,
+    _: User = Depends(user_is_instructor),
+) -> CourseResponse:
+    """Scrape a single course from a URL"""
+    course = await scrape_course(course_url, course_selector, hero_image_selector)
+    if not course:
+        raise HTTPException(status_code=404, detail="Could not parse course from URL")
+    course_data = course.model_dump()
+    course_data.update({
+        'course_url': course_url,
+        'is_featured': False,
+        'average_rating': 0.0,
+        'total_reviews': 0
+    })
+    return CourseResponse(**course_data)

@@ -30,7 +30,6 @@ async def user_is_instructor(
     current_user: Annotated[User, Depends(user_is_active)],
 ) -> User:
     if current_user.role not in [UserRole.instructor, UserRole.admin]:
-        print(current_user.role)
         raise HTTPException(
             status_code=403, detail="Only instructors and admins have access"
         )

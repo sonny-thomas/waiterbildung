@@ -6,7 +6,6 @@ from pydantic import HttpUrl, field_validator
 from app.core.utils import validate_https, normalize_url
 from app.schemas import BaseRequest, BaseResponse
 from urllib.parse import urlparse
-import requests
 
 class ScraperStatus(Enum):
     not_started = "not_started"
