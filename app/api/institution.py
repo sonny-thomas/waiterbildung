@@ -15,7 +15,7 @@ from app.schemas.institution import (
     AddInstitution,
     ScrapeInstitutionCourses,
 )
-from app.schemas.course import CourseResponse
+from app.schemas.course import CourseResponse, ScrapeCourse
 from app.core.utils import get_domain
 
 router = APIRouter(prefix="/institution", tags=["institutions"])
@@ -135,16 +135,9 @@ async def scrape_single_course(
     course_selector: str | None = None,
     hero_image_selector: str | None = None,
     _: User = Depends(user_is_instructor),
-) -> CourseResponse:
+) -> ScrapeCourse:
     """Scrape a single course from a URL"""
     course = await scrape_course(course_url, course_selector, hero_image_selector)
     if not course:
         raise HTTPException(status_code=404, detail="Could not parse course from URL")
-    course_data = course.model_dump()
-    course_data.update({
-        'course_url': course_url,
-        'is_featured': False,
-        'average_rating': 0.0,
-        'total_reviews': 0
-    })
-    return CourseResponse(**course_data)
+    return ScrapeCourse(**course.model_dump())
