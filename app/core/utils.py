@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse
+from urllib.parse import urldefrag, urlparse
 
 from bs4 import BeautifulSoup
 from pydantic import HttpUrl
@@ -22,3 +22,12 @@ def clean_html(html_content: str) -> str:
     text = text.replace("\r\n", "\n")
 
     return str(text)
+
+
+def normalize_url(url: str) -> str:
+    """Normalize URL for comparison."""
+    clean_url, _ = urldefrag(url)
+    return clean_url.lower().rstrip("/")
+
+def get_domain(url: str) -> str:
+    return urlparse(url).netloc

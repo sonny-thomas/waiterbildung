@@ -1,58 +1,113 @@
 import asyncio
 from collections import deque
-from typing import Set
-from urllib.parse import urldefrag, urljoin
+from typing import List, Optional, Set
+from urllib.parse import urljoin
 
 import aiohttp
-import tldextract
 from bs4 import BeautifulSoup
+from sqlalchemy.orm import Session
 
 from app.core.chatbot import openai
 from app.core.database import SessionLocal
 from app.core.logger import logger
-from app.core.utils import clean_html
+from app.core.utils import clean_html, get_domain, normalize_url
 from app.models.course import Course
+from app.models.institution import Institution
 from app.schemas.course import ScrapeCourse
+from app.schemas.institution import ScrapeInstitution, ScraperStatus
 
 
-class Scraper:
-    def __init__(
-        self,
-        institution_id: str,
-        domain: str,
-        course_url: str,
-        course_selector: str,
-        hero_image_selector: str,
-        max_courses: int,
-    ):
+async def extract_and_save_course(
+    db: Session,
+    institution_id: str,
+    url: str,
+    html: str,
+    hero_image_selector: Optional[str] = None,
+    worker_id: int = 0,
+) -> None:
+    """Extract course data from HTML and save to database in one operation."""
+    logger.info(f"Worker {worker_id}: Extracting course from URL {url}")
+    try:
+        content = clean_html(html)
+        completion = openai.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Extract course information from the HTML content...""",
+                },
+                {"role": "user", "content": content},
+            ],
+            response_format=ScrapeCourse,
+        )
+
+        data = completion.choices[0].message.parsed
+        if not data:
+            logger.info(f"Worker {worker_id}: No data extracted from {url}")
+            return
+
+        hero_image = None
+        if hero_image_selector:
+            soup = BeautifulSoup(html, "html.parser")
+            hero_img = soup.select_one(hero_image_selector)
+            if hero_img:
+                hero_image = urljoin(
+                    url, hero_img.get("src") or hero_img.get("data-src")
+                )
+
+        course_data = {
+            **data.model_dump(),
+            "url": url,
+            "detailed_content": content,
+            "hero_image": hero_image,
+        }
+
+        existing_course = Course.get(db, url=url)
+        if existing_course:
+            for key, value in course_data.items():
+                setattr(existing_course, key, value)
+            course = existing_course
+        else:
+            course = Course(institution_id=institution_id, **course_data)
+
+        course.save(db)
+        logger.info(f"Worker {worker_id}: Saved course {course.title}")
+
+    except asyncio.TimeoutError:
+        logger.error(f"Worker {worker_id}: Timeout extracting course from URL {url}")
+    except Exception as e:
+        logger.exception(
+            f"Worker {worker_id}: Error extracting course from URL {url}: {str(e)}"
+        )
+
+
+class Crawler:
+    def __init__(self, institution_id: str, domain: str, req: ScrapeInstitution):
         self.institution_id = institution_id
         self.domain = domain
-        self.course_selector = course_selector
-        self.hero_image_selector = hero_image_selector
-        self.max_courses = max_courses
+        self.start_url = normalize_url(str(req.start_url))
+        self.course_selector = req.course_selector
+        self.hero_image_selector = req.hero_image_selector
+        self.max_courses = req.max_courses
         self.courses_found = 0
 
         self.visited_urls: Set[str] = set()
-        self.url_queue = deque([course_url])
-        self.pending_urls: Set[str] = set()
-        self.processing_semaphore = asyncio.Semaphore(10)
-        self.save_semaphore = asyncio.Semaphore(5)
+        self.url_queue = deque([self.start_url])
+        self.pending_urls: Set[str] = {self.start_url}
+        self.semaphore = asyncio.Semaphore(20)
+        self.db = SessionLocal()
 
-    def normalize_url(self, url: str) -> str:
-        clean_url, _ = urldefrag(url)
-        return clean_url.lower().rstrip("/")
-
-    def should_process_url(self, url: str) -> bool:
+    def should_process_url(self, url: str) -> str | None:
+        """Check if URL should be processed."""
         if not url.startswith(("http://", "https://")):
-            return False
+            return None
 
-        normalized_url = self.normalize_url(url)
-
-        if tldextract.extract(normalized_url).registered_domain != self.domain:
-            return False
-
+        normalized_url = normalize_url(url)
         if normalized_url in self.visited_urls:
-            return False
+            return None
+
+        if get_domain(normalized_url) != self.domain:
+            return None
 
         if any(
             ext in normalized_url
@@ -72,176 +127,172 @@ class Scraper:
                 ".pptx",
             ]
         ):
-            return False
-
-        return True
-
-    def extract_hero_image(self, soup: BeautifulSoup, base_url: str) -> str | None:
-        if not self.hero_image_selector:
             return None
 
-        hero_img = soup.select_one(self.hero_image_selector)
-        if not hero_img:
-            return None
+        return normalized_url
 
-        # Try to get image URL from src or data-src attributes
-        img_url = hero_img.get("src") or hero_img.get("data-src")
-        if img_url:
-            return urljoin(base_url, img_url)
-        return None
-
-    def extract_course(self, html: str) -> ScrapeCourse | None:
-        completion = openai.beta.chat.completions.parse(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": """Extract course information from the HTML content. 
-                        Focus on finding:
-                        - Title
-                        - Description
-                        - Degree type (bachelor, master, phd, not_specified)
-                        - Study mode (full_time, part_time, online, hybrid, not_specified)
-                        - ECTS credits
-                        - Teaching language
-                        - Diploma awarded
-                        - Start date
-                        - End date
-                        - Duration in semesters
-                        - Application deadline
-                        - Campus location
-                        - Study abroad availability
-                        - Tuition fee per semester
-                        Return structured data only.""",
-                },
-                {"role": "user", "content": html},
-            ],
-            response_format=ScrapeCourse,
-        )
-        result = completion.choices[0].message.parsed
-        return result
-
-    async def save_course_data(self, url: str, soup: BeautifulSoup, html: str) -> None:
-        async with self.save_semaphore:
-            logger.info(f"Saving course data for {url}")
-            try:
-                db = SessionLocal()
-                content = clean_html(html)
-                data = await asyncio.get_event_loop().run_in_executor(
-                    None, self.extract_course, content
-                )
-
-                if data is None:
-                    return
-
-                hero_image = self.extract_hero_image(soup, url)
-
-                existing_course = Course.get(db, url=url)
-
-                course_data = {
-                    **data.model_dump(),
-                    "institution_id": self.institution_id,
-                    "url": url,
-                    "detailed_content": content,
-                    "hero_image": hero_image,
-                }
-
-                if existing_course:
-                    for key, value in course_data.items():
-                        setattr(existing_course, key, value)
-                    course = existing_course
-                else:
-                    course = Course(**course_data)
-
-                if self.courses_found < self.max_courses:
-                    course.save(db)
-                    self.courses_found += 1
-                    logger.info(f"Saved course {course.title}")
-
-            except Exception as e:
-                logger.exception(f"Error saving course data for {url}")
-            finally:
-                db.close()
-
-    async def process_url(self, session: aiohttp.ClientSession, url: str) -> Set[str]:
+    async def process_url(
+        self, session: aiohttp.ClientSession, url: str, worker_id: int
+    ) -> None:
+        """Process a single URL, extract course data if found, and find new URLs."""
         if self.courses_found >= self.max_courses:
-            return set()
+            return
 
-        async with self.processing_semaphore:
+        async with self.semaphore:
+            self.pending_urls.add(url)
+            logger.info(f"Worker {worker_id}: Processing URL {url}")
             try:
-                normalized_url = self.normalize_url(url)
-                self.pending_urls.add(normalized_url)
-                if normalized_url in self.visited_urls:
-                    return set()
-
+                timeout = aiohttp.ClientTimeout(total=30)
                 async with session.get(
-                    normalized_url, allow_redirects=True
+                    url, allow_redirects=True, timeout=timeout
                 ) as response:
-                    if response.status == 200:
-                        final_url = str(response.url)
-                        normalized_final = self.normalize_url(final_url)
-
-                        if normalized_final in self.visited_urls:
-                            return set()
-
-                        self.visited_urls.update(
-                            [normalized_final, final_url, normalized_url, url]
+                    if response.status != 200:
+                        logger.warning(
+                            f"Worker {worker_id}: Status {response.status} for URL {url}"
                         )
+                        return
 
-                        html = await response.text()
+                    final_url = str(response.url)
+                    normalized_url = normalize_url(final_url)
+                    self.visited_urls.update({url, final_url, normalized_url})
 
-                        soup = await asyncio.get_event_loop().run_in_executor(
-                            None, lambda: BeautifulSoup(html, "html.parser")
+                    html = await response.text()
+                    soup = BeautifulSoup(html, "html.parser")
+
+                    if (
+                        soup.select(self.course_selector)
+                        and self.courses_found < self.max_courses
+                    ):
+                        await extract_and_save_course(
+                            self.db,
+                            self.institution_id,
+                            normalized_url,
+                            html,
+                            self.hero_image_selector,
+                            worker_id,
                         )
+                        self.courses_found += 1
 
-                        if self.courses_found < self.max_courses and soup.select(
-                            self.course_selector
-                        ):
-                            await self.save_course_data(normalized_final, soup, html)
+                    for link in soup.find_all("a", href=True):
+                        full_url = urljoin(url, link["href"])
+                        normalized = self.should_process_url(full_url)
+                        if normalized:
+                            self.url_queue.append(normalized)
 
-                        if self.courses_found >= self.max_courses:
-                            return set()
-
-                        links: Set[str] = set()
-                        for link in soup.find_all("a", href=True):
-                            full_url = urljoin(normalized_final, link["href"])
-                            if self.should_process_url(full_url):
-                                links.add(full_url)
-
-                        return links
-                    else:
-                        return set()
+            except asyncio.TimeoutError:
+                logger.error(f"Worker {worker_id}: Timeout processing URL {url}")
             except Exception as e:
-                logger.exception(f"Error processing URL {url}")
-                return set()
+                logger.exception(
+                    f"Worker {worker_id}: Error processing URL {url}: {str(e)}"
+                )
             finally:
                 if url in self.pending_urls:
                     self.pending_urls.remove(url)
                 self.visited_urls.add(url)
-                self.visited_urls.add(self.normalize_url(url))
 
-    async def worker(self, session: aiohttp.ClientSession) -> None:
-        while True:
-            if self.courses_found >= self.max_courses:
-                break
+    async def worker(self, worker_id: int) -> None:
+        """Individual worker that processes URLs independently."""
+        conn = aiohttp.TCPConnector()
+        timeout = aiohttp.ClientTimeout(total=30)
+        async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
+            while True:
+                if self.courses_found >= self.max_courses:
+                    break
 
-            if not self.url_queue and not self.pending_urls:
-                break
-            try:
-                url = self.url_queue.popleft()
-            except IndexError:
-                if self.pending_urls:
-                    await asyncio.sleep(0.1)
-                    continue
+                try:
+                    url = self.url_queue.popleft()
+                except IndexError:
+                    if self.pending_urls:
+                        await asyncio.sleep(0.1)
+                        continue
+                    break
 
-                break
-
-            new_links = await self.process_url(session, url)
-            self.url_queue.extend(new_links)
-
-            await asyncio.sleep(0.1)
+                await self.process_url(session, url, worker_id)
 
     async def crawl(self) -> None:
-        async with aiohttp.ClientSession() as session:
-            workers = [asyncio.create_task(self.worker(session)) for _ in range(10)]
+        """Crawl website using multiple independent workers."""
+        try:
+            institution = Institution.get(self.db, id=self.institution_id)
+            if institution:
+                institution.scraper_status = ScraperStatus.in_progress
+                institution.save(self.db)
+
+            workers = [asyncio.create_task(self.worker(i)) for i in range(20)]
             await asyncio.gather(*workers)
+
+            if institution:
+                institution.scraper_status = ScraperStatus.completed
+                institution.save(self.db)
+
+        except Exception as e:
+            logger.exception(f"Error crawling institution: {str(e)}")
+            if institution:
+                institution.scraper_status = ScraperStatus.failed
+                institution.save(self.db)
+        finally:
+            self.db.close()
+
+
+async def scrape_courses(
+    institution_id: str,
+    course_urls: List[str],
+    hero_image_selector: Optional[str] = None,
+) -> None:
+    """Scrape a list of known course URLs with controlled concurrency."""
+    semaphore = asyncio.Semaphore(20)
+    pending_urls: Set[str] = set()
+    print(course_urls)
+
+    try:
+        db = SessionLocal()
+        institution = Institution.get(db, id=institution_id)
+        if institution:
+            institution.scraper_status = ScraperStatus.in_progress
+            institution.save(db)
+
+        async def process_single_url(url: str, worker_id: int) -> None:
+            async with semaphore:
+                logger.info(f"Processing URL {url}")
+                pending_urls.add(url)
+                try:
+                    timeout = aiohttp.ClientTimeout(total=30)
+                    conn = aiohttp.TCPConnector(limit=100)
+                    async with aiohttp.ClientSession(
+                        connector=conn, timeout=timeout
+                    ) as session:
+                        async with session.get(url, allow_redirects=True) as response:
+                            if response.status == 200:
+                                html = await response.text()
+                                await extract_and_save_course(
+                                    db,
+                                    institution_id,
+                                    str(url),
+                                    html,
+                                    hero_image_selector,
+                                    worker_id,
+                                )
+                except Exception as e:
+                    logger.exception(
+                        f"Worker {worker_id}: Error processing course URL {url}: {str(e)}"
+                    )
+                finally:
+                    if url in pending_urls:
+                        pending_urls.remove(url)
+
+
+        tasks = [
+            asyncio.create_task(process_single_url(url, i))
+            for i, url in enumerate(course_urls)
+        ]
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        if institution:
+            institution.scraper_status = ScraperStatus.completed
+            institution.save(db)
+    except Exception as e:
+        logger.exception(f"Error scraping courses: {str(e)}")
+        if institution:
+            institution.scraper_status = ScraperStatus.failed
+            institution.save(db)
+    finally:
+        db.close()

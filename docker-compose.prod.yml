@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -13,12 +13,11 @@ services:
 
   api:
     image: waiterbildung:latest
-    build: .
     command: sh -c "alembic revision --autogenerate -m 'auto' && alembic upgrade head && python main.py"
+    build: .
     env_file:
       - .env
     volumes:
-      - .:/app
       - alembic_versions:/app/alembic/versions
     depends_on:
       postgres:
@@ -28,36 +27,23 @@ services:
 
   email-worker:
     image: waiterbildung:latest
-    build:
-      context: .
-      target: development
     command: python worker.py email
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
       - api
 
   scraper-worker:
     image: waiterbildung:latest
-    build:
-      context: .
-      target: development
     command: python worker.py scraper
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
       - api
 
   rq:
     image: waiterbildung:latest
-    build:
-      context: .
-      target: development
-    command: sh -c "rq-dashboard --bind 0.0.0.0 --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
+    command: sh -c "rq-dashboard --bind rq --port 9181 --url-prefix '/rq' --redis-url ${REDIS_URL}"
     env_file:
       - .env
     depends_on:
