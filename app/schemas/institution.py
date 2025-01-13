@@ -29,7 +29,7 @@ class AddInstitution(BaseRequest):
 
 class ScrapeInstitution(BaseRequest):
     start_url: HttpUrl
-    course_selector: str
+    course_selectors: set[str]
     hero_image_selector: Optional[str]
     max_courses: int = 50
 
@@ -45,6 +45,14 @@ class ScrapeInstitutionCourses(BaseRequest):
     def validate_course_urls(cls, urls: list[HttpUrl]) -> list[str]:
         return [normalize_url(str(validate_https(url))) for url in urls]
 
+class ScrapeSingleCourse(BaseRequest):
+    course_url: HttpUrl
+    course_selectors: set[str] | None = None
+    hero_image_selector: str | None = None
+
+    @field_validator("course_url")
+    def must_be_https(cls, v: HttpUrl) -> str:
+        return normalize_url(str(validate_https(v)))
 
 class InstitutionResponse(BaseResponse):
     id: str

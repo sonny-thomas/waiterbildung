@@ -11,11 +11,12 @@ from app.schemas import PaginatedRequest
 from app.schemas.institution import (
     InstitutionResponse,
     ScrapeInstitution,
+    ScrapeSingleCourse,
     ScraperStatus,
     AddInstitution,
     ScrapeInstitutionCourses,
 )
-from app.schemas.course import CourseResponse, ScrapeCourse
+from app.schemas.course import ScrapeCourse
 from app.core.utils import get_domain
 
 router = APIRouter(prefix="/institution", tags=["institutions"])
@@ -88,7 +89,7 @@ async def scrape_institution(
         )
 
     scraper = Crawler(institution.id, institution.domain, request)
-    scraper_queue.enqueue(scraper.crawl, timeout=3600)
+    scraper_queue.enqueue(scraper.crawl, job_timeout=3600)
 
     institution.scraper_status = ScraperStatus.queued
     institution.save(db)
@@ -131,13 +132,11 @@ async def scrape_institution_courses(
 
 @router.post("/scrape_single_course")
 async def scrape_single_course(
-    course_url: str,
-    course_selector: str | None = None,
-    hero_image_selector: str | None = None,
+    req: ScrapeSingleCourse,
     _: User = Depends(user_is_instructor),
 ) -> ScrapeCourse:
     """Scrape a single course from a URL"""
-    course = await scrape_course(course_url, course_selector, hero_image_selector)
+    course = await scrape_course(req.course_url, req.course_selectors, req.hero_image_selector)
     if not course:
         raise HTTPException(status_code=404, detail="Could not parse course from URL")
     return ScrapeCourse(**course.model_dump())

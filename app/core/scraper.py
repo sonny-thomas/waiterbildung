@@ -5,12 +5,13 @@ from urllib.parse import urljoin
 
 import aiohttp
 from bs4 import BeautifulSoup
+from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
 from app.core.chatbot import openai
 from app.core.database import SessionLocal
 from app.core.logger import logger
-from app.core.utils import clean_html, get_domain, normalize_url
+from app.core.utils import clean_html, get_domain, normalize_url, validate_https
 from app.models.course import Course
 from app.models.institution import Institution
 from app.schemas.course import ScrapeCourse
@@ -92,7 +93,7 @@ class Crawler:
         self.institution_id = institution_id
         self.domain = domain
         self.start_url = normalize_url(str(req.start_url))
-        self.course_selector = req.course_selector
+        self.course_selectors = req.course_selectors
         self.hero_image_selector = req.hero_image_selector
         self.max_courses = req.max_courses
         self.courses_found = 0
@@ -101,7 +102,6 @@ class Crawler:
         self.url_queue = deque([self.start_url])
         self.pending_urls: Set[str] = {self.start_url}
         self.semaphore = asyncio.Semaphore(20)
-        self.db = SessionLocal()
 
     def should_process_url(self, url: str) -> str | None:
         """Check if URL should be processed."""
@@ -138,7 +138,7 @@ class Crawler:
         return normalized_url
 
     async def process_url(
-        self, session: aiohttp.ClientSession, url: str, worker_id: int
+        self, session: aiohttp.ClientSession, url: str, worker_id: int, db: Session
     ) -> None:
         """Process a single URL, extract course data if found, and find new URLs."""
         if self.courses_found >= self.max_courses:
@@ -164,13 +164,14 @@ class Crawler:
 
                     html = await response.text()
                     soup = BeautifulSoup(html, "html.parser")
-
-                    if (
-                        soup.select(self.course_selector)
-                        and self.courses_found < self.max_courses
-                    ):
+                    matches = False
+                    for selector in self.course_selectors:
+                        if soup.select(selector):
+                            matches = True
+                            break
+                    if matches and self.courses_found < self.max_courses:
                         await extract_course(
-                            self.db,
+                            db,
                             self.institution_id,
                             normalized_url,
                             html,
@@ -196,7 +197,7 @@ class Crawler:
                     self.pending_urls.remove(url)
                 self.visited_urls.add(url)
 
-    async def worker(self, worker_id: int) -> None:
+    async def worker(self, worker_id: int, db: Session) -> None:
         """Individual worker that processes URLs independently."""
         conn = aiohttp.TCPConnector()
         timeout = aiohttp.ClientTimeout(total=30)
@@ -213,35 +214,36 @@ class Crawler:
                         continue
                     break
 
-                await self.process_url(session, url, worker_id)
+                await self.process_url(session, url, worker_id, db)
 
     async def crawl(self) -> None:
         """Crawl website using multiple independent workers."""
+        db = SessionLocal()
         try:
-            institution = Institution.get(self.db, id=self.institution_id)
+            institution = Institution.get(db, id=self.institution_id)
             if institution:
                 institution.scraper_status = ScraperStatus.in_progress
-                institution.save(self.db)
+                institution.save(db)
 
-            workers = [asyncio.create_task(self.worker(i)) for i in range(20)]
+            workers = [asyncio.create_task(self.worker(i, db)) for i in range(20)]
             await asyncio.gather(*workers)
 
             if institution:
                 institution.scraper_status = ScraperStatus.completed
-                institution.save(self.db)
+                institution.save(db)
 
         except Exception as e:
             logger.exception(f"Error crawling institution: {str(e)}")
             if institution:
                 institution.scraper_status = ScraperStatus.failed
-                institution.save(self.db)
+                institution.save(db)
         finally:
-            self.db.close()
+            db.close()
 
 
 async def scrape_course(
-    course_url: str,
-    course_selector: Optional[str] = None,
+    course_url: HttpUrl,
+    course_selectors: Optional[set[str]] = None,
     hero_image_selector: Optional[str] = None,
 ) -> Optional[Course]:
     """Scrape a single course URL and return the Course object."""
@@ -249,14 +251,21 @@ async def scrape_course(
         timeout = aiohttp.ClientTimeout(total=30)
         conn = aiohttp.TCPConnector(limit=100)
         async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
-            async with session.get(course_url, allow_redirects=True) as response:
+            async with session.get(str(course_url), allow_redirects=True) as response:
                 if response.status == 200:
                     html = await response.text()
-                    
-                    if course_selector:
+
+                    if course_selectors:
                         soup = BeautifulSoup(html, "html.parser")
-                        if not soup.select(course_selector):
-                            logger.warning(f"URL {course_url} does not match course selector")
+                        matches = False
+                        for selector in course_selectors:
+                            if soup.select(selector):
+                                matches = True
+                                break
+                        if not matches:
+                            logger.warning(
+                                f"URL {course_url} does not match any course selectors"
+                            )
                             return None
 
                     course = await extract_course(
@@ -271,7 +280,6 @@ async def scrape_course(
     except Exception:
         logger.exception(f"Error scraping course from URL {course_url}")
         return None
-
 
 
 async def scrape_courses(
