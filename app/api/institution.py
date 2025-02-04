@@ -4,31 +4,30 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.middleware import user_is_admin, user_is_instructor
 from app.core.queue import scraper_queue
-from app.core.scraper import Crawler, scrape_courses, scrape_course
+from app.core.scraper import Crawler, scrape_courses
+from app.core.utils import get_domain
 from app.models.institution import Institution
 from app.models.user import User
 from app.schemas import PaginatedRequest
 from app.schemas.institution import (
+    AddInstitution,
+    CrawlInstitution,
     InstitutionResponse,
     ScrapeInstitution,
-    ScrapeSingleCourse,
     ScraperStatus,
-    AddInstitution,
-    ScrapeInstitutionCourses,
+    UpdateInstitution,
 )
-from app.schemas.course import ScrapeCourse
-from app.core.utils import get_domain
 
 router = APIRouter(prefix="/institution", tags=["institutions"])
 
 
 @router.get("s")
-async def get_institutions(
+async def list_institutions(
     filter: PaginatedRequest = Depends(),
     db: Session = Depends(get_db),
     _: User = Depends(user_is_instructor),
 ) -> list[InstitutionResponse]:
-    """Get all institutions with pagination"""
+    """List all institutions with pagination"""
     institutions = Institution.get_all(
         db,
         skip=filter.skip,
@@ -38,7 +37,8 @@ async def get_institutions(
         use_or=filter.use_or,
     )
     return [
-        InstitutionResponse(**institution.model_dump()) for institution in institutions
+        InstitutionResponse(**institution.model_dump())
+        for institution in institutions
     ]
 
 
@@ -62,20 +62,45 @@ async def add_institution(
     db: Session = Depends(get_db),
     _: User = Depends(user_is_admin),
 ) -> InstitutionResponse:
+    """Add a new institution"""
+    if Institution.get(db, domain=data.domain):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Institution with domain {data.domain} already exists",
+        )
+
     institution = Institution(**data.model_dump())
     institution.save(db)
     return InstitutionResponse(**institution.model_dump())
 
 
-@router.post("/{institution_id}/scrape")
-async def scrape_institution(
+@router.put("/{institution_id}")
+async def update_institution(
     institution_id: str,
-    request: ScrapeInstitution,
+    data: UpdateInstitution,
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_admin),
+) -> InstitutionResponse:
+    """Update an institution by ID"""
+    institution = Institution.get(db, id=institution_id)
+    if not institution:
+        raise HTTPException(status_code=404, detail="Institution not found")
+
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(institution, key, value)
+
+    institution.save(db)
+    return InstitutionResponse(**institution.model_dump())
+
+
+@router.post("/crawl")
+async def crawl_institution(
+    request: CrawlInstitution,
     db: Session = Depends(get_db),
     _: User = Depends(user_is_instructor),
 ) -> InstitutionResponse:
-    """Scrape an institution by ID"""
-    institution = Institution.get(db, id=institution_id)
+    """Crawl an institution for courses"""
+    institution = Institution.get(db, id=request.institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
     if institution.scraper_status.value in ["queued", "in_progress"]:
@@ -85,7 +110,8 @@ async def scrape_institution(
         )
     if get_domain(str(request.start_url)) != institution.domain:
         raise HTTPException(
-            status_code=400, detail="URL domain does not match institution domain."
+            status_code=400,
+            detail="URL domain does not match institution domain.",
         )
 
     scraper = Crawler(institution.id, institution.domain, request)
@@ -97,15 +123,14 @@ async def scrape_institution(
     return InstitutionResponse(**institution.model_dump())
 
 
-@router.post("/{institution_id}/courses")
+@router.post("/scrape")
 async def scrape_institution_courses(
-    institution_id: str,
-    request: ScrapeInstitutionCourses,
+    request: ScrapeInstitution,
     db: Session = Depends(get_db),
     _: User = Depends(user_is_instructor),
 ) -> InstitutionResponse:
     """Scrape courses for an institution by ID"""
-    institution = Institution.get(db, id=institution_id)
+    institution = Institution.get(db, id=request.institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
     if institution.scraper_status.value in ["queued", "in_progress"]:
@@ -121,22 +146,13 @@ async def scrape_institution_courses(
                 detail=f"URL domain {get_domain(str(url))} does not match institution domain: {institution.domain}",
             )
     scraper_queue.enqueue(
-        scrape_courses, institution.id, request.course_urls, request.hero_image_selector
+        scrape_courses,
+        institution.id,
+        request.course_urls,
+        request.hero_image_selector,
     )
 
     institution.scraper_status = ScraperStatus.queued
     institution.save(db)
 
     return InstitutionResponse(**institution.model_dump())
-
-
-@router.post("/scrape_single_course")
-async def scrape_single_course(
-    req: ScrapeSingleCourse,
-    _: User = Depends(user_is_instructor),
-) -> ScrapeCourse:
-    """Scrape a single course from a URL"""
-    course = await scrape_course(req.course_url, req.course_selectors, req.hero_image_selector)
-    if not course:
-        raise HTTPException(status_code=404, detail="Could not parse course from URL")
-    return ScrapeCourse(**course.model_dump())

@@ -1,11 +1,12 @@
 from enum import Enum
 from typing import Optional
+from urllib.parse import urlparse
 
 from pydantic import HttpUrl, field_validator
 
-from app.core.utils import validate_https, normalize_url
+from app.core.utils import normalize_url, validate_https
 from app.schemas import BaseRequest, BaseResponse
-from urllib.parse import urlparse
+
 
 class ScraperStatus(Enum):
     not_started = "not_started"
@@ -27,7 +28,20 @@ class AddInstitution(BaseRequest):
         return urlparse(str(v)).netloc
 
 
-class ScrapeInstitution(BaseRequest):
+class UpdateInstitution(BaseRequest):
+    name: Optional[str]
+    logo: Optional[HttpUrl]
+    domain: Optional[HttpUrl | str]
+
+    @field_validator("domain")
+    def extract_domain(cls, v: Optional[HttpUrl]) -> Optional[str]:
+        if v is None:
+            return None
+        validate_https(v)
+        return urlparse(str(v)).netloc
+
+class CrawlInstitution(BaseRequest):
+    institution_id: str
     start_url: HttpUrl
     course_selectors: set[str]
     hero_image_selector: Optional[str]
@@ -37,7 +51,9 @@ class ScrapeInstitution(BaseRequest):
     def must_be_https(cls, v: HttpUrl) -> HttpUrl:
         return validate_https(v)
 
-class ScrapeInstitutionCourses(BaseRequest):
+
+class ScrapeInstitution(BaseRequest):
+    institution_id: str
     hero_image_selector: Optional[str]
     course_urls: set[HttpUrl]
 
@@ -45,18 +61,11 @@ class ScrapeInstitutionCourses(BaseRequest):
     def validate_course_urls(cls, urls: list[HttpUrl]) -> list[str]:
         return [normalize_url(str(validate_https(url))) for url in urls]
 
-class ScrapeSingleCourse(BaseRequest):
-    course_url: HttpUrl
-    course_selectors: set[str] | None = None
-    hero_image_selector: str | None = None
-
-    @field_validator("course_url")
-    def must_be_https(cls, v: HttpUrl) -> str:
-        return normalize_url(str(validate_https(v)))
 
 class InstitutionResponse(BaseResponse):
     id: str
     name: str
+    logo: Optional[str]
     domain: str
     scraper_status: ScraperStatus
     is_active: bool
