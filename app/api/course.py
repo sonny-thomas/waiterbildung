@@ -147,12 +147,10 @@ async def update_course(
         existing_course = Course.get(db, id=course_id)
         if not existing_course:
             raise HTTPException(status_code=404, detail="Course not found")
-        update_data = {
-            k: v for k, v in course.model_dump().items() if v is not None
-        }
+        update_data = course.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(existing_course, key, value)
-        db.commit()
+        existing_course.save(db)
         return CourseResponse(**existing_course.model_dump())
     except HTTPException as http_exception:
         raise http_exception

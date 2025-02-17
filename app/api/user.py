@@ -107,7 +107,7 @@ async def update_user(
         if not user_to_update:
             raise HTTPException(status_code=404, detail="User not found")
 
-        user_data = user.model_dump()
+        user_data = user.model_dump(exclude_unset=True)
         for key, value in user_data.items():
             setattr(user_to_update, key, value)
         user_to_update.save(db)
