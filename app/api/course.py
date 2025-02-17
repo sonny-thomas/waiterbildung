@@ -1,16 +1,19 @@
+from app.models.review import Review
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.middleware import user_is_admin, user_is_instructor
+from app.core.middleware import user_is_admin, user_is_active
 from app.models.course import Course
 from app.models.user import User
-from app.schemas import PaginatedResponse
+from app.schemas import PaginatedRequest, PaginatedResponse
 
 from app.schemas.course import (
     CourseCreate,
     CoursePaginatedRequest,
     CourseResponse,
     CourseUpdate,
+    ReviewRequest,
+    ReviewResponse,
 )
 
 router = APIRouter(prefix="/course", tags=["course"])
@@ -32,10 +35,12 @@ async def create_course(
 async def get_all_courses(
     pagination: CoursePaginatedRequest = Depends(),
     db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
+    _: User = Depends(user_is_active),
 ) -> PaginatedResponse[CourseResponse]:
     """List all courses with pagination"""
     filters = {}
+    if pagination.institution_id:
+        filters["institution_id"] = pagination.institution_id
     if pagination.degree_type:
         filters["degree_type"] = pagination.degree_type
     if pagination.study_mode:
@@ -68,7 +73,7 @@ async def get_all_courses(
 async def get_course_by_id(
     course_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
+    _: User = Depends(user_is_active),
 ) -> CourseResponse:
     """Get a course by ID"""
     course = Course.get(db, id=course_id)
@@ -110,3 +115,93 @@ async def delete_course(
 
     Course.delete(db, id=course_id)
     return {"message": "Course deleted successfully"}
+
+
+@router.post("/{course_id}/review")
+async def create_review(
+    course_id: str,
+    review: ReviewRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(user_is_active),
+) -> ReviewResponse:
+    """Create a review for a course"""
+    course = Course.get(db, id=course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    new_review = Review(
+        **review.model_dump(), user_id=current_user.id, course_id=course_id
+    )
+    new_review.save(db)
+    return ReviewResponse(**new_review.model_dump())
+
+
+@router.get("/{course_id}/reviews")
+async def get_course_reviews(
+    course_id: str,
+    pagination: PaginatedRequest = Depends(),
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_active),
+) -> PaginatedResponse[ReviewResponse]:
+    """Get all reviews for a course"""
+    course = Course.get(db, id=course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    reviews, total = Review.get_all(
+        db,
+        page=pagination.page,
+        size=pagination.size,
+        sort_by=pagination.sort_by,
+        descending=pagination.descending,
+        course_id=course_id,
+    )
+    pages = (total + pagination.size - 1) // pagination.size
+    review_data = [ReviewResponse(**review.model_dump()) for review in reviews]
+
+    return PaginatedResponse(
+        data=review_data,
+        total=total,
+        page=pagination.page,
+        pages=pages,
+    )
+
+
+@router.post("/{course_id}/bookmark")
+async def bookmark_course(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(user_is_active),
+) -> dict:
+    """Bookmark a course for the current user"""
+    course = Course.get(db, id=course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if course in current_user.bookmarked_courses:
+        raise HTTPException(
+            status_code=400, detail="Course already bookmarked"
+        )
+
+    current_user.bookmarked_courses.append(course)
+    db.commit()
+    return {"message": "Course bookmarked successfully"}
+
+
+@router.delete("/{course_id}/bookmark")
+async def remove_bookmark(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(user_is_active),
+) -> dict:
+    """Remove a course bookmark for the current user"""
+    course = Course.get(db, id=course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if course not in current_user.bookmarked_courses:
+        raise HTTPException(status_code=400, detail="Course not bookmarked")
+
+    current_user.bookmarked_courses.remove(course)
+    db.commit()
+    return {"message": "Bookmark removed successfully"}

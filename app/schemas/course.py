@@ -4,6 +4,7 @@ from pydantic import HttpUrl, Field, field_validator
 from app.schemas import BaseRequest, BaseResponse, PaginatedRequest
 from app.models.course import DegreeType, StudyMode
 
+
 class CourseBase(BaseRequest):
     title: str = Field(..., max_length=500)
     description: str
@@ -34,13 +35,16 @@ class CourseBase(BaseRequest):
     def clean_url(cls, v: HttpUrl) -> str:
         return str(v)
 
+
 class CourseCreate(CourseBase):
     institution_id: str
+
 
 class CourseUpdate(CourseBase):
     title: Optional[str] = None
     description: Optional[str] = None
     url: Optional[HttpUrl] = None
+
 
 class CourseResponse(BaseResponse):
     id: str
@@ -66,7 +70,27 @@ class CourseResponse(BaseResponse):
     created_at: datetime
     updated_at: datetime
 
+
 class CoursePaginatedRequest(PaginatedRequest):
+    institution_id: Optional[str] = None
     degree_type: Optional[DegreeType] = None
     study_mode: Optional[StudyMode] = None
     is_featured: Optional[bool] = None
+
+class ReviewRequest(BaseRequest):
+    content: str
+    rating: float
+
+
+class ReviewResponse(BaseResponse):
+    id: str
+    content: str
+    rating: float
+    user_id: str
+    course_id: str
+    created_at: datetime
+    updated_at: datetime
+
+class ReviewPaginatedRequest(PaginatedRequest):
+    user_id: Optional[str] = None
+    course_id: Optional[str] = None

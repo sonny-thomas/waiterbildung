@@ -1,11 +1,13 @@
-from app.core.security.password import generate_password, hash_password
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.middleware import user_is_active, user_is_admin
+from app.core.security.password import generate_password, hash_password
+from app.models.review import Review
 from app.models.user import User
-from app.schemas import PaginatedResponse
+from app.schemas import PaginatedRequest, PaginatedResponse
+from app.schemas.course import ReviewResponse
 from app.schemas.user import (
     UserCreate,
     UserPaginatedRequest,
@@ -110,3 +112,48 @@ async def delete_user(
 
     User.delete(db, id=user_id)
     return {"message": "User deleted successfully"}
+
+
+@router.get("/{user_id}/reviews")
+async def get_user_reviews(
+    user_id: str,
+    pagination: PaginatedRequest = Depends(),
+    db: Session = Depends(get_db),
+    _: bool = Depends(user_is_active),
+) -> PaginatedResponse[ReviewResponse]:
+    """Get all reviews by a user"""
+    user = User.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    reviews, total = Review.get_all(
+        db,
+        page=pagination.page,
+        size=pagination.size,
+        sort_by=pagination.sort_by,
+        descending=pagination.descending,
+        user_id=user_id,
+    )
+    pages = (total + pagination.size - 1) // pagination.size
+    review_data = [ReviewResponse(**review.model_dump()) for review in reviews]
+
+    return PaginatedResponse(
+        data=review_data,
+        total=total,
+        page=pagination.page,
+        pages=pages,
+    )
+
+
+@router.get("/{user_id}/bookmarks")
+async def get_user_bookmarks(
+    user_id: str,
+    db: Session = Depends(get_db),
+    _: bool = Depends(user_is_active),
+):
+    """Get all courses bookmarked by a user"""
+    user = User.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user.bookmarked_courses
