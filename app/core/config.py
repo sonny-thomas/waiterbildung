@@ -71,12 +71,12 @@ class Settings(BaseSettings):
     CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET", "")
     CLOUDINARY_SECURE: bool = os.getenv("CLOUDINARY_SECURE", "true").lower() == "true"
 
-        @field_validator("ALLOWED_ORIGINS")
-        @classmethod
-        def validate_allowed_origins(cls, v: str) -> list[str]:
-            if isinstance(v, str):
-                return [url.strip() for url in v.split(",")]
-            return ["*"]
+    @field_validator("ALLOWED_ORIGINS")
+    @classmethod
+    def validate_allowed_origins(cls, v: str) -> list[str]:
+        if isinstance(v, str):
+            return [url.strip() for url in v.split(",")]
+        return ["*"]
 
     class Config:
         case_sensitive = True
