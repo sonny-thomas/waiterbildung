@@ -150,11 +150,10 @@ async def update_course(
         update_data = {
             k: v for k, v in course.model_dump().items() if v is not None
         }
-        updated_course = Course(
-            **{**existing_course.model_dump(), **update_data}
-        )
-        updated_course.save(db)
-        return CourseResponse(**updated_course.model_dump())
+        for key, value in update_data.items():
+            setattr(existing_course, key, value)
+        db.commit()
+        return CourseResponse(**existing_course.model_dump())
     except HTTPException as http_exception:
         raise http_exception
     except Exception as e:

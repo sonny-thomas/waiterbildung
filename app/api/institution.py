@@ -107,10 +107,11 @@ async def update_institution(
             raise HTTPException(
                 status_code=404, detail="Institution not found"
             )
-        institution_data = institution.model_dump()
-        updated_institution = Institution(**{**existing_institution.model_dump(), **institution_data})
-        updated_institution.save(db)
-        return InstitutionResponse(**updated_institution.model_dump())
+        institution_data = institution.model_dump(exclude_unset=True)
+        for key, value in institution_data.items():
+            setattr(existing_institution, key, value)
+        existing_institution.save(db)
+        return InstitutionResponse(**existing_institution.model_dump())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

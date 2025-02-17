@@ -108,9 +108,10 @@ async def update_review(
                 status_code=403, detail="Not authorized to update this review"
             )
         update_data = review.model_dump()
-        updated_review = Review(**{**existing_review.model_dump(), **update_data})
-        updated_review.save(db)
-        return ReviewResponse(**updated_review.model_dump())
+        for key, value in update_data.items():
+            setattr(existing_review, key, value)
+        existing_review.save(db)
+        return ReviewResponse(**existing_review.model_dump())
     except HTTPException as http_exc:
         raise http_exc
     except Exception as e:
