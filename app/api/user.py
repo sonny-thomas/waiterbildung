@@ -130,7 +130,7 @@ async def delete_user(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        User.delete(db)
+        user.delete(db)
         return {"message": "User deleted successfully"}
     except HTTPException as http_exception:
         raise http_exception

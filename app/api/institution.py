@@ -130,7 +130,7 @@ async def delete_institution(
                 status_code=404, detail="Institution not found"
             )
 
-        Institution.delete(db)
+        institution.delete(db)
         return {"message": "Institution deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

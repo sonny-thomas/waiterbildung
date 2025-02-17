@@ -135,7 +135,7 @@ async def delete_review(
                 status_code=403, detail="Not authorized to delete this review"
             )
 
-        Review.delete(db)
+        existing_review.delete(db)
         return {"message": "Review deleted successfully"}
     except HTTPException as http_exc:
         raise http_exc

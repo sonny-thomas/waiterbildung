@@ -170,7 +170,7 @@ async def delete_course(
         if not course:
             raise HTTPException(status_code=404, detail="Course not found")
 
-        Course.delete(db)
+        course.delete(db)
         return {"message": "Course deleted successfully"}
     except HTTPException as http_exception:
         raise http_exception
