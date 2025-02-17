@@ -69,6 +69,39 @@ async def get_all_courses(
     )
 
 
+@router.get("/latest")
+async def get_latest_courses(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+) -> list[CourseResponse]:
+    """Get latest courses without authentication"""
+    courses = Course.get_all(
+        db,
+        page=1,
+        size=limit,
+        sort_by="created_at",
+        descending=True,
+    )[0]
+    return [CourseResponse(**course.model_dump()) for course in courses]
+
+
+@router.get("/featured")
+async def get_featured_courses(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+) -> list[CourseResponse]:
+    """Get featured courses without authentication"""
+    courses = Course.get_all(
+        db,
+        page=1,
+        size=limit,
+        is_featured=True,
+        sort_by="created_at",
+        descending=True,
+    )[0]
+    return [CourseResponse(**course.model_dump()) for course in courses]
+
+
 @router.get("/{course_id}")
 async def get_course_by_id(
     course_id: str,
