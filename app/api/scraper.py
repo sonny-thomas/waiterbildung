@@ -8,7 +8,7 @@ from app.core.scraper import Crawler, scrape_courses
 from app.core.utils import get_domain
 from app.models.institution import Institution
 from app.models.user import User
-from app.schemas.institution import (
+from app.schemas.scraper import (
     CrawlInstitution,
     InstitutionResponse,
     ScrapeInstitution,
@@ -28,10 +28,10 @@ async def crawl_institution(
     institution = Institution.get(db, id=request.institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
-    if institution.scraper_status.value in ["queued", "in_progress"]:
+    if institution.status.value in ["queued", "in_progress"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Scraper is currently {institution.scraper_status.value} for this institution.",
+            detail=f"Scraper is currently {institution.status.value} for this institution.",
         )
     if get_domain(str(request.start_url)) != institution.domain:
         raise HTTPException(
@@ -42,7 +42,7 @@ async def crawl_institution(
     scraper = Crawler(institution.id, institution.domain, request)
     scraper_queue.enqueue(scraper.crawl, job_timeout=3600)
 
-    institution.scraper_status = ScraperStatus.queued
+    institution.status = ScraperStatus.queued
     institution.save(db)
 
     return InstitutionResponse(**institution.model_dump())
@@ -58,10 +58,10 @@ async def scrape_institution_courses(
     institution = Institution.get(db, id=request.institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
-    if institution.scraper_status.value in ["queued", "in_progress"]:
+    if institution.status.value in ["queued", "in_progress"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Scraper is currently {institution.scraper_status.value} for this institution.",
+            detail=f"Scraper is currently {institution.status.value} for this institution.",
         )
 
     for url in request.course_urls:
@@ -77,7 +77,7 @@ async def scrape_institution_courses(
         request.hero_image_selector,
     )
 
-    institution.scraper_status = ScraperStatus.queued
+    institution.status = ScraperStatus.queued
     institution.save(db)
 
     return InstitutionResponse(**institution.model_dump())
