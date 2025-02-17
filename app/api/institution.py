@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.middleware import user_is_admin, user_is_instructor
+from app.core.middleware import user_is_admin
 from app.models.institution import Institution
 from app.models.user import User
 from app.schemas import PaginatedResponse
@@ -41,7 +41,7 @@ async def create_institution(
 async def get_all_institutions(
     pagination: InstitutionPaginatedRequest = Depends(),
     db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
+    _: User = Depends(user_is_admin),
 ) -> PaginatedResponse[InstitutionResponse]:
     """List all institutions with pagination"""
     try:
@@ -78,13 +78,15 @@ async def get_all_institutions(
 async def get_institution_by_id(
     institution_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
+    _: User = Depends(user_is_admin),
 ) -> InstitutionResponse:
     """Get an institution by ID"""
     try:
         institution = Institution.get(db, id=institution_id)
         if not institution:
-            raise HTTPException(status_code=404, detail="Institution not found")
+            raise HTTPException(
+                status_code=404, detail="Institution not found"
+            )
 
         return InstitutionResponse(**institution.model_dump())
     except Exception as e:
@@ -102,11 +104,12 @@ async def update_institution(
     try:
         existing_institution = Institution.get(db, id=institution_id)
         if not existing_institution:
-            raise HTTPException(status_code=404, detail="Institution not found")
-
-        updated_institution = Institution.save(
-            db, institution_id, institution.model_dump()
-        )
+            raise HTTPException(
+                status_code=404, detail="Institution not found"
+            )
+        institution_data = institution.model_dump()
+        updated_institution = Institution(**{**existing_institution.model_dump(), **institution_data})
+        updated_institution.save(db)
         return InstitutionResponse(**updated_institution.model_dump())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -122,7 +125,9 @@ async def delete_institution(
     try:
         institution = Institution.get(db, id=institution_id)
         if not institution:
-            raise HTTPException(status_code=404, detail="Institution not found")
+            raise HTTPException(
+                status_code=404, detail="Institution not found"
+            )
 
         Institution.delete(db, id=institution_id)
         return {"message": "Institution deleted successfully"}

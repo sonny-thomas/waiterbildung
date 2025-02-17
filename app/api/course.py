@@ -63,7 +63,9 @@ async def get_all_courses(
             **filters
         )
         pages = (total + pagination.size - 1) // pagination.size
-        course_data = [CourseResponse(**course.model_dump()) for course in courses]
+        course_data = [
+            CourseResponse(**course.model_dump()) for course in courses
+        ]
 
         return PaginatedResponse(
             data=course_data,
@@ -145,11 +147,13 @@ async def update_course(
         existing_course = Course.get(db, id=course_id)
         if not existing_course:
             raise HTTPException(status_code=404, detail="Course not found")
-
         update_data = {
             k: v for k, v in course.model_dump().items() if v is not None
         }
-        updated_course = Course.save(db, course_id, update_data)
+        updated_course = Course(
+            **{**existing_course.model_dump(), **update_data}
+        )
+        updated_course.save(db)
         return CourseResponse(**updated_course.model_dump())
     except HTTPException as http_exception:
         raise http_exception
@@ -223,7 +227,9 @@ async def get_course_reviews(
             course_id=course_id,
         )
         pages = (total + pagination.size - 1) // pagination.size
-        review_data = [ReviewResponse(**review.model_dump()) for review in reviews]
+        review_data = [
+            ReviewResponse(**review.model_dump()) for review in reviews
+        ]
 
         return PaginatedResponse(
             data=review_data,
@@ -276,7 +282,9 @@ async def remove_bookmark(
             raise HTTPException(status_code=404, detail="Course not found")
 
         if course not in current_user.bookmarked_courses:
-            raise HTTPException(status_code=400, detail="Course not bookmarked")
+            raise HTTPException(
+                status_code=400, detail="Course not bookmarked"
+            )
 
         current_user.bookmarked_courses.remove(course)
         db.commit()

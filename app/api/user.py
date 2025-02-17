@@ -107,7 +107,9 @@ async def update_user(
         if not user_to_update:
             raise HTTPException(status_code=404, detail="User not found")
 
-        updated_user = User.save(db, user_id, user.model_dump())
+        user_data = user.model_dump()
+        updated_user = User(**{**user_to_update.model_dump(), **user_data})
+        updated_user.save(db)
         return UserResponse(**updated_user.model_dump())
     except HTTPException as http_exception:
         raise http_exception
