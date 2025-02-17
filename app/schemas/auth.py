@@ -6,10 +6,11 @@ from app.schemas.user import UserResponse
 
 
 class UserRegister(BaseRequest):
+    email: EmailStr
     first_name: str
     last_name: str
-    email: EmailStr
-    phone: str | None
+    phone: str | None = None
+    avatar: str | None = None
     password: str | None = "w6^6wR4sDVY("
 
     @field_validator("password")
@@ -33,9 +34,33 @@ class Auth(BaseResponse):
     refresh_token_expires_at: int
 
 
-class RefreshTokenRequest(BaseRequest):
+class AuthResponse(Auth):
+    user: UserResponse
+
+
+class RefreshToken(BaseRequest):
     refresh_token: str
 
 
-class AuthResponse(Auth):
-    user: UserResponse
+class ForgotPassword(BaseRequest):
+    email: EmailStr
+
+
+class ResetPassword(BaseRequest):
+    token: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        return validate_password(v)
+
+
+class ChangePassword(BaseRequest):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        return validate_password(v)

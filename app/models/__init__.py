@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import Any, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 from uuid import uuid4
 
-from sqlalchemy import DateTime, String, or_
+from sqlalchemy import DateTime, String, or_, and_
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from app.core.database import Base
@@ -40,14 +40,17 @@ class BaseModel(Base):
     def get_all(
         cls: type[T],
         db: Session,
-        skip: int = 0,
-        limit: int = 100,
-        sort_by: str | None = None,
+        page: int = 1,
+        size: int = 100,
+        sort_by: Optional[str] = None,
         descending: bool = False,
         use_or: bool = True,
-        **filters: Any,
-    ) -> list["BaseModel"]:
+        filters: Optional[Dict[str, Any]] = None,
+        search: Optional[str] = None,
+    ) -> tuple[List[T], int]:
+        skip = (page - 1) * size
         query = db.query(cls)
+        conditions = []
 
         if filters:
             filter_conditions = []
@@ -56,21 +59,42 @@ class BaseModel(Base):
                     filter_conditions.append(getattr(cls, attr) == value)
                 else:
                     raise ValueError(f"Invalid filter attribute: {attr}")
+            if filter_conditions:
+                conditions.append(
+                    or_(*filter_conditions)
+                    if use_or
+                    else and_(*filter_conditions)
+                )
 
-            if use_or:
-                query = query.filter(or_(*filter_conditions))
-            else:
-                for condition in filter_conditions:
-                    query = query.filter(condition)
+        if search:
+            search_fields = getattr(cls, "SEARCH_FIELDS", [])
+            if search_fields:
+                search_conditions = []
+                for field in search_fields:
+                    if hasattr(cls, field):
+                        search_conditions.append(
+                            getattr(cls, field).ilike(f"%{search}%")
+                        )
+                    else:
+                        raise ValueError(f"Invalid search field: {field}")
+                if search_conditions:
+                    conditions.append(or_(*search_conditions))
+
+        if conditions:
+            query = query.filter(*conditions)
+
+        total = query.count()
 
         if sort_by:
             if not hasattr(cls, sort_by):
                 raise ValueError(f"Invalid sort attribute: {sort_by}")
             order_attr = getattr(cls, sort_by)
-            query = query.order_by(order_attr.desc() if descending else order_attr)
+            query = query.order_by(
+                order_attr.desc() if descending else order_attr
+            )
 
-        query = query.offset(skip).limit(limit)
-        return query.all()
+        data = query.offset(skip).limit(size).all()
+        return data, total
 
     def save(self: T, db: Session) -> T:
         if not self.id:

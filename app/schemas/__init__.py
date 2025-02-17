@@ -1,6 +1,5 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar
 
-from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
@@ -15,8 +14,16 @@ class BaseResponse(BaseModel, Generic[T]):
 
 
 class PaginatedRequest(BaseRequest):
-    skip: int = 0
-    limit: int = 100
-    sort_by: Optional[str] = None
+    page: int = 1
+    size: int = 100
+    sort_by: str = "created_at"
     descending: bool = False
-    use_or: bool = True
+    use_or: bool = False
+    search: Optional[str] = None
+
+
+class PaginatedResponse(BaseResponse[T], Generic[T]):
+    data: List[T]
+    total: int
+    page: int
+    pages: int

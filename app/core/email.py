@@ -55,14 +55,14 @@ def send_verification_email(email: str, first_name: str, token: str) -> None:
     )
 
 
-def send_reset_password(email: str, token: str) -> None:
+def send_reset_password(email: str, first_name: str, token: str) -> None:
     """Send reset password email"""
     send_email(
         subject="Reset your password",
         email=email,
         template_name="reset_password.mjml",
         context={
-            "token": token,
+            "first_name": first_name,
             "reset_url": f"{settings.FRONTEND_URL}/auth/reset-password/{token}",
         },
     )

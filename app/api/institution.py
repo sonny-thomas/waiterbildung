@@ -3,43 +3,69 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.middleware import user_is_admin, user_is_instructor
-from app.core.queue import scraper_queue
-from app.core.scraper import Crawler, scrape_courses
-from app.core.utils import get_domain
 from app.models.institution import Institution
 from app.models.user import User
-from app.schemas import PaginatedRequest
+from app.schemas import PaginatedResponse
 from app.schemas.institution import (
-    AddInstitution,
-    CrawlInstitution,
+    InstitutionCreate,
+    InstitutionPaginatedRequest,
     InstitutionResponse,
-    ScrapeInstitution,
-    ScraperStatus,
-    UpdateInstitution,
+    InstitutionUpdate,
 )
 
-router = APIRouter(prefix="/institution", tags=["institutions"])
+router = APIRouter(prefix="/institution", tags=["institution"])
+
+
+@router.post("")
+async def create_institution(
+    institution: InstitutionCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_admin),
+) -> InstitutionResponse:
+    """Create a new institution"""
+    if Institution.get(db, domain=institution.domain):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Institution with domain {institution.domain} already exists",
+        )
+
+    new_institution = Institution(**institution.model_dump())
+    new_institution.save(db)
+    return InstitutionResponse(**new_institution.model_dump())
 
 
 @router.get("s")
-async def list_institutions(
-    filter: PaginatedRequest = Depends(),
+async def get_all_institutions(
+    pagination: InstitutionPaginatedRequest = Depends(),
     db: Session = Depends(get_db),
     _: User = Depends(user_is_instructor),
-) -> list[InstitutionResponse]:
+) -> PaginatedResponse[InstitutionResponse]:
     """List all institutions with pagination"""
-    institutions = Institution.get_all(
+    filters = {}
+    if pagination.status:
+        filters["status"] = pagination.status
+    if pagination.is_active is not None:
+        filters["is_active"] = pagination.is_active
+    institutions, total = Institution.get_all(
         db,
-        skip=filter.skip,
-        limit=filter.limit,
-        sort_by=filter.sort_by,
-        descending=filter.descending,
-        use_or=filter.use_or,
+        page=pagination.page,
+        size=pagination.size,
+        sort_by=pagination.sort_by,
+        descending=pagination.descending,
+        use_or=pagination.use_or,
+        search=pagination.search,
     )
-    return [
-        InstitutionResponse(**institution.model_dump())
-        for institution in institutions
+    pages = (total + pagination.size - 1) // pagination.size
+    institution_data = [
+        InstitutionResponse(**inst.model_dump()) for inst in institutions
     ]
+
+    return PaginatedResponse(
+        data=institution_data,
+        total=total,
+        page=pagination.page,
+        pages=pages,
+    )
 
 
 @router.get("/{institution_id}")
@@ -56,103 +82,34 @@ async def get_institution_by_id(
     return InstitutionResponse(**institution.model_dump())
 
 
-@router.post("")
-async def add_institution(
-    data: AddInstitution,
-    db: Session = Depends(get_db),
-    _: User = Depends(user_is_admin),
-) -> InstitutionResponse:
-    """Add a new institution"""
-    if Institution.get(db, domain=data.domain):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Institution with domain {data.domain} already exists",
-        )
-
-    institution = Institution(**data.model_dump())
-    institution.save(db)
-    return InstitutionResponse(**institution.model_dump())
-
-
 @router.put("/{institution_id}")
 async def update_institution(
     institution_id: str,
-    data: UpdateInstitution,
+    institution: InstitutionUpdate,
     db: Session = Depends(get_db),
     _: User = Depends(user_is_admin),
 ) -> InstitutionResponse:
-    """Update an institution by ID"""
+    """Update an institution"""
+    existing_institution = Institution.get(db, id=institution_id)
+    if not existing_institution:
+        raise HTTPException(status_code=404, detail="Institution not found")
+
+    updated_institution = Institution.update(
+        db, institution_id, institution.model_dump()
+    )
+    return InstitutionResponse(**updated_institution.model_dump())
+
+
+@router.delete("/{institution_id}")
+async def delete_institution(
+    institution_id: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(user_is_admin),
+):
+    """Delete an institution"""
     institution = Institution.get(db, id=institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
 
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(institution, key, value)
-
-    institution.save(db)
-    return InstitutionResponse(**institution.model_dump())
-
-
-@router.post("/crawl")
-async def crawl_institution(
-    request: CrawlInstitution,
-    db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
-) -> InstitutionResponse:
-    """Crawl an institution for courses"""
-    institution = Institution.get(db, id=request.institution_id)
-    if not institution:
-        raise HTTPException(status_code=404, detail="Institution not found")
-    if institution.scraper_status.value in ["queued", "in_progress"]:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Scraper is currently {institution.scraper_status.value} for this institution.",
-        )
-    if get_domain(str(request.start_url)) != institution.domain:
-        raise HTTPException(
-            status_code=400,
-            detail="URL domain does not match institution domain.",
-        )
-
-    scraper = Crawler(institution.id, institution.domain, request)
-    scraper_queue.enqueue(scraper.crawl, job_timeout=3600)
-
-    institution.scraper_status = ScraperStatus.queued
-    institution.save(db)
-
-    return InstitutionResponse(**institution.model_dump())
-
-
-@router.post("/scrape")
-async def scrape_institution_courses(
-    request: ScrapeInstitution,
-    db: Session = Depends(get_db),
-    _: User = Depends(user_is_instructor),
-) -> InstitutionResponse:
-    """Scrape courses for an institution by ID"""
-    institution = Institution.get(db, id=request.institution_id)
-    if not institution:
-        raise HTTPException(status_code=404, detail="Institution not found")
-    if institution.scraper_status.value in ["queued", "in_progress"]:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Scraper is currently {institution.scraper_status.value} for this institution.",
-        )
-
-    for url in request.course_urls:
-        if get_domain(str(url)) != institution.domain:
-            raise HTTPException(
-                status_code=400,
-                detail=f"URL domain {get_domain(str(url))} does not match institution domain: {institution.domain}",
-            )
-    scraper_queue.enqueue(
-        scrape_courses,
-        institution.id,
-        request.course_urls,
-        request.hero_image_selector,
-    )
-
-    institution.scraper_status = ScraperStatus.queued
-    institution.save(db)
-
-    return InstitutionResponse(**institution.model_dump())
+    Institution.delete(db, id=institution_id)
+    return {"message": "Institution deleted successfully"}
