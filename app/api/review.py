@@ -22,13 +22,16 @@ async def create_review(
     current_user: User = Depends(user_is_active),
 ) -> ReviewResponse:
     """Create a new review for a course"""
-    review_data = review.model_dump()
-    review_data["course_id"] = course_id
-    review_data["user_id"] = current_user.id
+    try:
+        review_data = review.model_dump()
+        review_data["course_id"] = course_id
+        review_data["user_id"] = current_user.id
 
-    new_review = Review(**review_data)
-    new_review.save(db)
-    return ReviewResponse(**new_review.model_dump())
+        new_review = Review(**review_data)
+        new_review.save(db)
+        return ReviewResponse(**new_review.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("s")
@@ -38,29 +41,34 @@ async def get_all_reviews(
     _: User = Depends(user_is_active),
 ) -> PaginatedResponse[ReviewResponse]:
     """List all reviews with pagination"""
-    filters = {}
-    if pagination.user_id:
-        filters["user_id"] = pagination.user_id
-    if pagination.course_id:
-        filters["course_id"] = pagination.course_id
+    try:
+        filters = {}
+        if pagination.user_id:
+            filters["user_id"] = pagination.user_id
+        if pagination.course_id:
+            filters["course_id"] = pagination.course_id
 
-    reviews, total = Review.get_all(
-        db,
-        page=pagination.page,
-        size=pagination.size,
-        sort_by=pagination.sort_by,
-        descending=pagination.descending,
-        **filters
-    )
-    pages = (total + pagination.size - 1) // pagination.size
-    review_data = [ReviewResponse(**review.model_dump()) for review in reviews]
+        reviews, total = Review.get_all(
+            db,
+            page=pagination.page,
+            size=pagination.size,
+            sort_by=pagination.sort_by,
+            descending=pagination.descending,
+            **filters
+        )
+        pages = (total + pagination.size - 1) // pagination.size
+        review_data = [
+            ReviewResponse(**review.model_dump()) for review in reviews
+        ]
 
-    return PaginatedResponse(
-        data=review_data,
-        total=total,
-        page=pagination.page,
-        pages=pages,
-    )
+        return PaginatedResponse(
+            data=review_data,
+            total=total,
+            page=pagination.page,
+            pages=pages,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{review_id}")
@@ -70,11 +78,16 @@ async def get_review_by_id(
     _: User = Depends(user_is_active),
 ) -> ReviewResponse:
     """Get a review by ID"""
-    review = Review.get(db, id=review_id)
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    try:
+        review = Review.get(db, id=review_id)
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
 
-    return ReviewResponse(**review.model_dump())
+        return ReviewResponse(**review.model_dump())
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/{review_id}")
@@ -85,18 +98,23 @@ async def update_review(
     current_user: User = Depends(user_is_active),
 ) -> ReviewResponse:
     """Update a review"""
-    existing_review = Review.get(db, id=review_id)
-    if not existing_review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    try:
+        existing_review = Review.get(db, id=review_id)
+        if not existing_review:
+            raise HTTPException(status_code=404, detail="Review not found")
 
-    if existing_review.user_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to update this review"
-        )
+        if existing_review.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to update this review"
+            )
 
-    update_data = review.model_dump()
-    updated_review = Review.update(db, review_id, update_data)
-    return ReviewResponse(**updated_review.model_dump())
+        update_data = review.model_dump()
+        updated_review = Review.save(db, review_id, update_data)
+        return ReviewResponse(**updated_review.model_dump())
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{review_id}")
@@ -106,14 +124,19 @@ async def delete_review(
     current_user: User = Depends(user_is_active),
 ):
     """Delete a review"""
-    existing_review = Review.get(db, id=review_id)
-    if not existing_review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    try:
+        existing_review = Review.get(db, id=review_id)
+        if not existing_review:
+            raise HTTPException(status_code=404, detail="Review not found")
 
-    if existing_review.user_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to delete this review"
-        )
+        if existing_review.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to delete this review"
+            )
 
-    Review.delete(db, id=review_id)
-    return {"message": "Review deleted successfully"}
+        Review.delete(db, id=review_id)
+        return {"message": "Review deleted successfully"}
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
