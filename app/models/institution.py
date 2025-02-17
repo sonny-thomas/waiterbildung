@@ -24,3 +24,5 @@ class Institution(BaseModel):
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     average_rating: Mapped[float] = mapped_column(Float, default=0.0)
+
+    SEARCH_FIELDS = ["name", "domain"]

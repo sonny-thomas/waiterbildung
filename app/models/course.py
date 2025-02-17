@@ -31,7 +31,9 @@ class Course(BaseModel):
     # Basic Information
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    hero_image: Mapped[Optional[HttpUrl]] = mapped_column(String(500), nullable=True)
+    hero_image: Mapped[Optional[HttpUrl]] = mapped_column(
+        String(500), nullable=True
+    )
 
     # Academic Details
     degree_type: Mapped[Optional[DegreeType]] = mapped_column(
@@ -41,32 +43,40 @@ class Course(BaseModel):
         SQLEnum(StudyMode), nullable=True
     )
     ects_credits: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    teaching_language: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    diploma_awarded: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    teaching_language: Mapped[Optional[str]] = mapped_column(
+        String(200), nullable=True
+    )
+    diploma_awarded: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True
+    )
 
     # Schedule and Duration
     start_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     end_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    duration_in_semesters: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    application_deadline: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    duration_in_semesters: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )
+    application_deadline: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True
+    )
 
     # Location and Delivery
-    campus_location: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    study_abroad_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    campus_location: Mapped[Optional[str]] = mapped_column(
+        String(200), nullable=True
+    )
+    study_abroad_available: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )
     tuition_fee_per_semester: Mapped[Optional[str]] = mapped_column(
         String, nullable=True
     )
 
-    # Web Links
-    url: Mapped[HttpUrl] = mapped_column(String(500), nullable=False)
-    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    # Ratings and Reviews
-    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
-    total_reviews: Mapped[int] = mapped_column(Integer, default=0)
-
     # Additional Content
-    detailed_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
+    url: Mapped[HttpUrl] = mapped_column(String(500), nullable=False)
+    detailed_content: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True
+    )
 
     # Relationships
     institution_id: Mapped[int] = mapped_column(
