@@ -24,8 +24,8 @@ async def create_chat():
     )
 
 
-@router.post("/chat/{chat_id}/message", response_model=ChatResponse)
-async def send_message(chat_id: str, request: MessageRequest):
+@router.post("/{chat_id}")
+async def send_message(chat_id: str, request: MessageRequest) -> ChatResponse:
     """Send a message in an existing chat"""
     if chat_id not in chats:
         raise HTTPException(status_code=404, detail="chat not found")
