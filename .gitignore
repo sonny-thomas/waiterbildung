@@ -35,3 +35,4 @@ staticfiles/
 *.vscode/
 
 *.png
+alembic/versions
