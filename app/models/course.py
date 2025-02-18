@@ -4,10 +4,11 @@ from typing import Optional
 from pydantic import HttpUrl
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import ForeignKey, Integer, String, Table, Text
+from sqlalchemy import ForeignKey, Integer, String, Table, Text, DateTime
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
+from sqlalchemy.sql import func
 
-from app.models import T, BaseModel
+from app.models import BaseModel
 from app.models.session import Session
 
 
@@ -53,17 +54,15 @@ class Course(BaseModel):
         String(200), nullable=True
     )
     diploma_awarded: Mapped[Optional[str]] = mapped_column(
-        String(500), nullable=True
     )
 
     # Schedule and Duration
-    start_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    end_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    start_date: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
+    end_date: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
     duration_in_semesters: Mapped[Optional[int]] = mapped_column(
         Integer, nullable=True
     )
-    application_deadline: Mapped[Optional[str]] = mapped_column(
-        String, nullable=True
+    application_deadline: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
     )
 
     # Location and Delivery
