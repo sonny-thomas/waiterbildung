@@ -107,7 +107,7 @@ class Course(BaseModel):
         content = "\n".join(filter(None, content_parts))
 
         metadata = {
-            k: v.value if hasattr(v, "value") else v
+            k: v.value if hasattr(v, "value") else str(v)
             for k, v in self.__dict__.items()
             if not k.startswith("_") and v is not None
         }
