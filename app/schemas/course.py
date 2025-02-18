@@ -1,14 +1,16 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import HttpUrl, Field, field_validator
-from app.schemas import BaseRequest, BaseResponse, PaginatedRequest
+
+from pydantic import Field, HttpUrl, field_validator
+
 from app.models.course import DegreeType, StudyMode
+from app.schemas import BaseRequest, BaseResponse, PaginatedRequest
 
 
 class CourseBase(BaseRequest):
     title: str = Field(..., max_length=500)
     description: str
-    hero_image: Optional[HttpUrl] = None
+    hero_image: Optional[HttpUrl | str] = None
     degree_type: Optional[DegreeType] = None
     study_mode: Optional[StudyMode] = None
     ects_credits: Optional[int] = None
@@ -22,7 +24,7 @@ class CourseBase(BaseRequest):
     study_abroad_available: bool = False
     tuition_fee_per_semester: Optional[str] = None
     is_featured: bool = False
-    url: HttpUrl
+    url: HttpUrl | str
     detailed_content: Optional[str] = None
 
     @field_validator("hero_image")
@@ -46,11 +48,9 @@ class CourseUpdate(CourseBase):
     url: Optional[HttpUrl] = None
 
 
-class CourseResponse(BaseResponse):
-    id: str
+class CourseBaseResponse(BaseResponse):
     title: str
     description: str
-    hero_image: Optional[str]
     degree_type: Optional[DegreeType]
     study_mode: Optional[StudyMode]
     ects_credits: Optional[int]
@@ -63,9 +63,13 @@ class CourseResponse(BaseResponse):
     campus_location: Optional[str]
     study_abroad_available: bool
     tuition_fee_per_semester: Optional[str]
+
+
+class CourseResponse(CourseBaseResponse):
+    id: str
+    hero_image: Optional[str]
     is_featured: bool
     url: str
-    detailed_content: Optional[str]
     institution_id: str
     created_at: datetime
     updated_at: datetime
@@ -76,6 +80,7 @@ class CoursePaginatedRequest(PaginatedRequest):
     degree_type: Optional[DegreeType] = None
     study_mode: Optional[StudyMode] = None
     is_featured: Optional[bool] = None
+
 
 class ReviewRequest(BaseRequest):
     content: str
@@ -90,6 +95,7 @@ class ReviewResponse(BaseResponse):
     course_id: str
     created_at: datetime
     updated_at: datetime
+
 
 class ReviewPaginatedRequest(PaginatedRequest):
     user_id: Optional[str] = None

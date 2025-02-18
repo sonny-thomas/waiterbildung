@@ -11,11 +11,15 @@ from sqlalchemy.orm import Session
 from app.core.chatbot import openai
 from app.core.database import SessionLocal
 from app.core.logger import logger
-from app.core.utils import clean_html, get_domain, normalize_url, validate_https
+from app.core.utils import (
+    clean_html,
+    get_domain,
+    normalize_url,
+)
 from app.models.course import Course
 from app.models.institution import Institution
-from app.schemas.course import ScrapeCourse
-from app.schemas.institution import ScrapeInstitution, ScraperStatus
+from app.schemas.course import CourseBaseResponse
+from app.schemas.scraper import ScrapeInstitution, ScraperStatus
 
 
 async def extract_course(
@@ -39,7 +43,7 @@ async def extract_course(
                 },
                 {"role": "user", "content": content},
             ],
-            response_format=ScrapeCourse,
+            response_format=CourseBaseResponse,
         )
 
         data = completion.choices[0].message.parsed
@@ -79,7 +83,9 @@ async def extract_course(
         return Course(**course_data)
 
     except asyncio.TimeoutError:
-        logger.error(f"Worker {worker_id}: Timeout extracting course from URL {url}")
+        logger.error(
+            f"Worker {worker_id}: Timeout extracting course from URL {url}"
+        )
         return None
     except Exception as e:
         logger.exception(
@@ -89,7 +95,9 @@ async def extract_course(
 
 
 class Crawler:
-    def __init__(self, institution_id: str, domain: str, req: ScrapeInstitution):
+    def __init__(
+        self, institution_id: str, domain: str, req: ScrapeInstitution
+    ):
         self.institution_id = institution_id
         self.domain = domain
         self.start_url = normalize_url(str(req.start_url))
@@ -138,7 +146,11 @@ class Crawler:
         return normalized_url
 
     async def process_url(
-        self, session: aiohttp.ClientSession, url: str, worker_id: int, db: Session
+        self,
+        session: aiohttp.ClientSession,
+        url: str,
+        worker_id: int,
+        db: Session,
     ) -> None:
         """Process a single URL, extract course data if found, and find new URLs."""
         if self.courses_found >= self.max_courses:
@@ -187,7 +199,9 @@ class Crawler:
                             self.url_queue.append(normalized)
 
             except asyncio.TimeoutError:
-                logger.error(f"Worker {worker_id}: Timeout processing URL {url}")
+                logger.error(
+                    f"Worker {worker_id}: Timeout processing URL {url}"
+                )
             except Exception as e:
                 logger.exception(
                     f"Worker {worker_id}: Error processing URL {url}: {str(e)}"
@@ -201,7 +215,9 @@ class Crawler:
         """Individual worker that processes URLs independently."""
         conn = aiohttp.TCPConnector()
         timeout = aiohttp.ClientTimeout(total=30)
-        async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
+        async with aiohttp.ClientSession(
+            connector=conn, timeout=timeout
+        ) as session:
             while True:
                 if self.courses_found >= self.max_courses:
                     break
@@ -224,8 +240,11 @@ class Crawler:
             if institution:
                 institution.status = ScraperStatus.in_progress
                 institution.save(db)
+            print(f"Scraping {self.domain} with {self.max_courses} courses")
 
-            workers = [asyncio.create_task(self.worker(i, db)) for i in range(20)]
+            workers = [
+                asyncio.create_task(self.worker(i, db)) for i in range(20)
+            ]
             await asyncio.gather(*workers)
 
             if institution:
@@ -250,8 +269,12 @@ async def scrape_course(
     try:
         timeout = aiohttp.ClientTimeout(total=30)
         conn = aiohttp.TCPConnector(limit=100)
-        async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
-            async with session.get(str(course_url), allow_redirects=True) as response:
+        async with aiohttp.ClientSession(
+            connector=conn, timeout=timeout
+        ) as session:
+            async with session.get(
+                str(course_url), allow_redirects=True
+            ) as response:
                 if response.status == 200:
                     html = await response.text()
 
@@ -308,7 +331,9 @@ async def scrape_courses(
                     async with aiohttp.ClientSession(
                         connector=conn, timeout=timeout
                     ) as session:
-                        async with session.get(url, allow_redirects=True) as response:
+                        async with session.get(
+                            url, allow_redirects=True
+                        ) as response:
                             if response.status == 200:
                                 html = await response.text()
                                 await extract_course(

@@ -117,7 +117,6 @@ async def update_user(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
@@ -129,6 +128,9 @@ async def delete_user(
         user = User.get(db, id=user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+            
+        if user.role == "admin":
+            raise HTTPException(status_code=403, detail="Cannot delete admin accounts")
 
         user.delete(db)
         return {"message": "User deleted successfully"}

@@ -45,5 +45,5 @@ class InstitutionUpdate(InstitutionCreate):
 
 
 class InstitutionPaginatedRequest(PaginatedRequest):
-    status: Optional[ScraperStatus]
+    status: Optional[ScraperStatus] = None
     is_active: Optional[bool] = None

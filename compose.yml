@@ -30,6 +30,8 @@ services:
     command: python worker.py email
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       - api
 
@@ -38,6 +40,8 @@ services:
     command: python worker.py scraper
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       - api
 

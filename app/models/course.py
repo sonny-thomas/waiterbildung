@@ -4,10 +4,16 @@ from typing import Optional
 from pydantic import HttpUrl
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Float, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
-from app.models import BaseModel
+from app.models import T, BaseModel
+from app.models.session import Session
+
+
+from langchain_core.documents import Document
+
+from app.core.chatbot import vector_db, text_splitter
 
 
 class DegreeType(str, Enum):
@@ -85,6 +91,32 @@ class Course(BaseModel):
     institution = relationship(
         "Institution", backref=backref("courses", lazy="dynamic")
     )
+
+    def save(self: "Course", db: Session) -> "Course":
+        super().save(db)
+        content_parts = [
+            f"Title: {self.title}",
+            f"Description: {self.description}",
+            f"Degree Type: {getattr(self.degree_type, 'value', 'Not specified')}",
+            f"Study Mode: {getattr(self.study_mode, 'value', 'Not specified')}",
+            f"Campus Location: {self.campus_location or 'Not specified'}",
+            f"Teaching Language: {self.teaching_language or 'Not specified'}",
+            f"ECTS Credits: {self.ects_credits or ''}",
+            f"Tuition Fee: {self.tuition_fee_per_semester or ''}",
+        ]
+        content = "\n".join(filter(None, content_parts))
+
+        metadata = {
+            k: v.value if hasattr(v, "value") else v
+            for k, v in self.__dict__.items()
+            if not k.startswith("_") and v is not None
+        }
+
+        doc = Document(page_content=content, metadata=metadata)
+        split_docs = text_splitter.split_documents([doc])
+        vector_db.add_documents(split_docs, ids=[str(self.id)])
+
+        return self
 
 
 course_bookmarks = Table(

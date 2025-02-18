@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import HttpUrl
-from sqlalchemy import Boolean, Float, String
+from sqlalchemy import Boolean, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,6 +23,5 @@ class Institution(BaseModel):
         default=ScraperStatus.not_started,
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
 
     SEARCH_FIELDS = ["name", "domain"]

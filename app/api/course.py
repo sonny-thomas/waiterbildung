@@ -1,3 +1,4 @@
+from app.core.utils import normalize_url
 from app.models.review import Review
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -27,6 +28,10 @@ async def create_course(
 ) -> CourseResponse:
     """Create a new course"""
     try:
+        if Course.get(db, url=normalize_url(course.url)):
+            raise HTTPException(
+                status_code=400, detail="Course with URL already exists"
+            )
         new_course = Course(**course.model_dump())
         new_course.save(db)
         return CourseResponse(**new_course.model_dump())
