@@ -5,6 +5,7 @@ from pydantic import Field, HttpUrl, field_validator
 
 from app.models.course import DegreeType, StudyMode
 from app.schemas import BaseRequest, BaseResponse, PaginatedRequest
+from app.schemas.institution import InstitutionResponse
 
 
 class CourseBase(BaseRequest):
@@ -70,9 +71,10 @@ class CourseResponse(CourseBaseResponse):
     hero_image: Optional[str]
     is_featured: bool
     url: str
-    institution_id: str
+    institution: InstitutionResponse
     created_at: datetime
     updated_at: datetime
+
 
 
 class CoursePaginatedRequest(PaginatedRequest):

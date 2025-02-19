@@ -109,7 +109,7 @@ class Course(BaseModel):
         metadata = {
             k: v.value if hasattr(v, "value") else str(v)
             for k, v in self.__dict__.items()
-            if not k.startswith("_") and v is not None
+            if not k.startswith("_") and v is not None and k != "detailed_content"
         }
 
         doc = Document(page_content=content, metadata=metadata)
