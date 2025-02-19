@@ -7,6 +7,7 @@ from app.core.middleware import user_is_admin, user_is_active
 from app.models.course import Course
 from app.models.user import User
 from app.schemas import PaginatedRequest, PaginatedResponse
+from sqlalchemy import func
 
 from app.schemas.course import (
     CourseCreate,
@@ -36,6 +37,70 @@ async def create_course(
         new_course.save(db)
         course_data = new_course.model_dump()
         return CourseResponse(**course_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/latest")
+async def get_latest_courses(
+    db: Session = Depends(get_db),
+) -> list[CourseResponse]:
+    """Get latest courses without authentication"""
+    try:
+        courses = Course.get_all(
+            db,
+            page=1,
+            size=10,
+            sort_by="created_at",
+            descending=True,
+        )[0]
+        return [CourseResponse(**course.model_dump()) for course in courses]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/featured")
+async def get_featured_courses(
+    db: Session = Depends(get_db),
+) -> list[CourseResponse]:
+    """Get featured courses without authentication"""
+    try:
+        courses = Course.get_all(
+            db,
+            page=1,
+            size=10,
+            sort_by="created_at",
+            descending=True,
+            filters={"is_featured": True},
+        )[0]
+        return [CourseResponse(**course.model_dump()) for course in courses]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/popular")
+async def get_popular_courses(
+    db: Session = Depends(get_db),
+) -> list[CourseResponse]:
+    """Get popular courses sorted by highest average review rating"""
+    try:
+        subquery = (
+            db.query(
+                Review.course_id.label("course_id"),
+                func.avg(Review.rating).label("avg_rating"),
+            )
+            .group_by(Review.course_id)
+            .subquery()
+        )
+
+        query = (
+            db.query(Course)
+            .outerjoin(subquery, Course.id == subquery.c.course_id)
+            .order_by(func.coalesce(subquery.c.avg_rating, 0).desc())
+        )
+
+        courses = query.all()
+        return [CourseResponse(**course.model_dump()) for course in courses]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -79,45 +144,6 @@ async def get_all_courses(
             page=pagination.page,
             pages=pages,
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/latest")
-async def get_latest_courses(
-    limit: int = 10,
-    db: Session = Depends(get_db),
-) -> list[CourseResponse]:
-    """Get latest courses without authentication"""
-    try:
-        courses = Course.get_all(
-            db,
-            page=1,
-            size=limit,
-            sort_by="created_at",
-            descending=True,
-        )[0]
-        return [CourseResponse(**course.model_dump()) for course in courses]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/featured")
-async def get_featured_courses(
-    limit: int = 10,
-    db: Session = Depends(get_db),
-) -> list[CourseResponse]:
-    """Get featured courses without authentication"""
-    try:
-        courses = Course.get_all(
-            db,
-            page=1,
-            size=limit,
-            sort_by="created_at",
-            descending=True,
-            filters={"is_featured": True},
-        )[0]
-        return [CourseResponse(**course.model_dump()) for course in courses]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -72,9 +72,10 @@ class CourseResponse(CourseBaseResponse):
     is_featured: bool
     url: str
     institution: InstitutionResponse
+    average_rating: float
+    total_reviews: int
     created_at: datetime
     updated_at: datetime
-
 
 
 class CoursePaginatedRequest(PaginatedRequest):
@@ -83,10 +84,9 @@ class CoursePaginatedRequest(PaginatedRequest):
     study_mode: Optional[StudyMode] = None
     is_featured: Optional[bool] = None
 
-
 class ReviewRequest(BaseRequest):
     content: str
-    rating: float
+    rating: float = Field(..., ge=1, le=5)
 
 
 class ReviewResponse(BaseResponse):

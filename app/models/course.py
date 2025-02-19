@@ -124,6 +124,18 @@ class Course(BaseModel):
         data = super().model_dump()
         if self.institution:
             data["institution"] = self.institution.model_dump()
+
+        reviews = list(self.reviews) if hasattr(self, "reviews") else []
+        total_reviews = len(reviews)
+        avg_rating = (
+            sum(review.rating for review in reviews) / total_reviews
+            if total_reviews > 0
+            else 0
+        )
+
+        data["average_rating"] = round(avg_rating, 1)
+        data["total_reviews"] = total_reviews
+
         return data
 
 
