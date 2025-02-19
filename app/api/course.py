@@ -8,6 +8,7 @@ from app.models.course import Course
 from app.models.user import User
 from app.schemas import PaginatedRequest, PaginatedResponse
 from sqlalchemy import func
+from fastapi import Query
 
 from app.schemas.course import (
     CourseCreate,
@@ -40,9 +41,9 @@ async def create_course(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/latest")
 async def get_latest_courses(
+    size: int = Query(6, le=15),
     db: Session = Depends(get_db),
 ) -> list[CourseResponse]:
     """Get latest courses without authentication"""
@@ -50,7 +51,7 @@ async def get_latest_courses(
         courses = Course.get_all(
             db,
             page=1,
-            size=10,
+            size=size,
             sort_by="created_at",
             descending=True,
         )[0]
@@ -61,6 +62,7 @@ async def get_latest_courses(
 
 @router.get("/featured")
 async def get_featured_courses(
+    size: int = Query(6, le=15),
     db: Session = Depends(get_db),
 ) -> list[CourseResponse]:
     """Get featured courses without authentication"""
@@ -68,7 +70,7 @@ async def get_featured_courses(
         courses = Course.get_all(
             db,
             page=1,
-            size=10,
+            size=size,
             sort_by="created_at",
             descending=True,
             filters={"is_featured": True},
@@ -80,6 +82,7 @@ async def get_featured_courses(
 
 @router.get("/popular")
 async def get_popular_courses(
+    size: int = Query(6, le=15),
     db: Session = Depends(get_db),
 ) -> list[CourseResponse]:
     """Get popular courses sorted by highest average review rating"""
@@ -97,6 +100,7 @@ async def get_popular_courses(
             db.query(Course)
             .outerjoin(subquery, Course.id == subquery.c.course_id)
             .order_by(func.coalesce(subquery.c.avg_rating, 0).desc())
+            .limit(size)
         )
 
         courses = query.all()
