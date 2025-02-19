@@ -34,7 +34,8 @@ async def create_course(
             )
         new_course = Course(**course.model_dump())
         new_course.save(db)
-        return CourseResponse(**new_course.model_dump())
+        course_data = new_course.model_dump()
+        return CourseResponse(**course_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -112,9 +113,9 @@ async def get_featured_courses(
             db,
             page=1,
             size=limit,
-            is_featured=True,
             sort_by="created_at",
             descending=True,
+            filters={"is_featured": True},
         )[0]
         return [CourseResponse(**course.model_dump()) for course in courses]
     except Exception as e:

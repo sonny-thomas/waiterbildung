@@ -37,7 +37,7 @@ class Course(BaseModel):
     # Basic Information
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    hero_image: Mapped[Optional[HttpUrl]] = mapped_column(
+    hero_image: Mapped[Optional[HttpUrl | str]] = mapped_column(
         String(500), nullable=True
     )
 
@@ -79,7 +79,7 @@ class Course(BaseModel):
 
     # Additional Content
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
-    url: Mapped[HttpUrl] = mapped_column(String(500), nullable=False)
+    url: Mapped[HttpUrl | str] = mapped_column(String(500), nullable=False)
     detailed_content: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True
     )
@@ -109,7 +109,9 @@ class Course(BaseModel):
         metadata = {
             k: v.value if hasattr(v, "value") else str(v)
             for k, v in self.__dict__.items()
-            if not k.startswith("_") and v is not None and k != "detailed_content"
+            if not k.startswith("_")
+            and v is not None
+            and k != "detailed_content"
         }
 
         doc = Document(page_content=content, metadata=metadata)
@@ -117,6 +119,12 @@ class Course(BaseModel):
         vector_db.add_documents(split_docs, ids=[str(self.id)])
 
         return self
+
+    def model_dump(self):
+        data = super().model_dump()
+        if self.institution:
+            data["institution"] = self.institution.model_dump()
+        return data
 
 
 course_bookmarks = Table(
