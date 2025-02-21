@@ -238,7 +238,7 @@ class Crawler:
         try:
             institution = Institution.get(db, id=self.institution_id)
             if institution:
-                institution.status = ScraperStatus.in_progress
+                institution.scraping_status = ScraperStatus.in_progress
                 institution.save(db)
             print(f"Scraping {self.domain} with {self.max_courses} courses")
 
@@ -248,13 +248,13 @@ class Crawler:
             await asyncio.gather(*workers)
 
             if institution:
-                institution.status = ScraperStatus.completed
+                institution.scraping_status = ScraperStatus.completed
                 institution.save(db)
 
         except Exception as e:
             logger.exception(f"Error crawling institution: {str(e)}")
             if institution:
-                institution.status = ScraperStatus.failed
+                institution.scraping_status = ScraperStatus.failed
                 institution.save(db)
         finally:
             db.close()
@@ -318,7 +318,7 @@ async def scrape_courses(
         db = SessionLocal()
         institution = Institution.get(db, id=institution_id)
         if institution:
-            institution.status = ScraperStatus.in_progress
+            institution.scraping_status = ScraperStatus.in_progress
             institution.save(db)
 
         async def process_single_url(url: str, worker_id: int) -> None:
@@ -359,12 +359,12 @@ async def scrape_courses(
         await asyncio.gather(*tasks, return_exceptions=True)
 
         if institution:
-            institution.status = ScraperStatus.completed
+            institution.scraping_status = ScraperStatus.completed
             institution.save(db)
     except Exception as e:
         logger.exception(f"Error scraping courses: {str(e)}")
         if institution:
-            institution.status = ScraperStatus.failed
+            institution.scraping_status = ScraperStatus.failed
             institution.save(db)
     finally:
         db.close()

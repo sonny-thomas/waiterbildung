@@ -14,6 +14,7 @@ class InstitutionResponse(BaseResponse):
     logo: Optional[str]
     domain: str
     is_active: bool
+    scraping_status: ScraperStatus
     created_at: datetime
     updated_at: datetime
 
@@ -45,5 +46,5 @@ class InstitutionUpdate(InstitutionCreate):
 
 
 class InstitutionPaginatedRequest(PaginatedRequest):
-    status: Optional[ScraperStatus] = None
+    scraping_status: Optional[ScraperStatus] = None
     is_active: Optional[bool] = None

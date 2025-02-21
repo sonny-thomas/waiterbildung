@@ -17,7 +17,7 @@ class Institution(BaseModel):
         String(100), unique=True, nullable=False
     )
     logo: Mapped[Optional[HttpUrl]] = mapped_column(String(500), nullable=True)
-    status: Mapped[ScraperStatus] = mapped_column(
+    scraping_status: Mapped[ScraperStatus] = mapped_column(
         SQLEnum(ScraperStatus),
         nullable=False,
         default=ScraperStatus.not_started,

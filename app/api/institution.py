@@ -46,8 +46,8 @@ async def get_all_institutions(
     """List all institutions with pagination"""
     try:
         filters = {}
-        if pagination.status:
-            filters["status"] = pagination.status
+        if pagination.scraping_status:
+            filters["scraping_status"] = pagination.scraping_status
         if pagination.is_active is not None:
             filters["is_active"] = pagination.is_active
         institutions, total = Institution.get_all(
