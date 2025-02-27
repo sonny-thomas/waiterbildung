@@ -1,0 +1,38 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd poc-scraper
+
+            # Pull latest code
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Build Docker image
+            docker-compose -f docker-compose.prod.yml build
+
+            # Stop existing containers
+            docker-compose -f docker-compose.prod.yml down
+
+            # Start new containers
+            docker-compose -f docker-compose.prod.yml up -d
+
+            # Optional: Cleanup old images
+            docker image prune -f
