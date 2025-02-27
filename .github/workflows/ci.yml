@@ -1,0 +1,74 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        volumes:
+          - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Decode .env file
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE_BASE64 }}
+        run: echo "$ENV_FILE" | base64 --decode > .env
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: flake8 **/*.py
+
+      # - name: Start Python Application
+      #   run: |
+      #     # Start the Python application in the background
+      #     python main.py > app.log 2>&1 &
+      #     sleep 30
+
+      #     # Check if the application is responding on port 8000
+      #     if ! curl -sSf http://localhost:8000/health > /dev/null; then
+      #       echo "Python application failed to start. Logs:"
+      #       cat app.log
+      #       exit 1
+      #     fi
+
+      - name: Test Celery Worker
+        env:
+          MONGODB_URL: mongodb://localhost:27017/test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          # Start Celery worker in the background
+          celery -A app.core.celery worker --loglevel=info > celery_worker.log 2>&1 &
+          sleep 5
+
+          # Check if the Celery worker is running
+          if ! celery -A app.core.celery inspect ping; then
+            echo "Celery worker failed to start. Logs:"
+            cat celery_worker.log
+            exit 1
+          fi
